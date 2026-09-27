@@ -15,3 +15,5 @@ require (
 )
 
 require webtyp.com/storage v0.1.1
+
+require webtyp.com/json v0.5.25 // indirect
