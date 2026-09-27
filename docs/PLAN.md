@@ -3,8 +3,9 @@ PLAN: "feat: chat_room — salas, mensajes persistidos, leídos, presencia y avi
 TAG: v0.1.0
 EXECUTOR: jules
 REVIEWER: none
-STATUS: running
+STATUS: review
 SESSION: 17684538278888635723
+PR: https://github.com/veltylabs/chat_room/pull/1
 ---
 
 > This plan is dispatched via the CodeJob workflow. See skill: agents-workflow.
