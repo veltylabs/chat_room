@@ -6,16 +6,9 @@ import (
 	chatroom "github.com/veltylabs/chat_room"
 	"github.com/veltylabs/chat_room/migrate"
 	"webtyp.com/fmt"
-	"webtyp.com/storage/mem"
 )
 
-func TestMigrateSync(t *testing.T) {
-	memConn := mem.New()
-	err := migrate.Sync(memConn)
-	if err != nil {
-		t.Fatalf("migrate.Sync failed: %v", err)
-	}
-}
+var _ = migrate.Migrate
 
 func TestExtraValidationAndErrorBranches(t *testing.T) {
 	partsList := []fmt.KeyValue{

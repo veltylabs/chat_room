@@ -14,6 +14,23 @@ require (
 	webtyp.com/view v0.6.10
 )
 
-require webtyp.com/storage v0.1.1
+require (
+	webtyp.com/components v0.7.0
+	webtyp.com/dom v0.13.17
+	webtyp.com/html v0.0.24
+	webtyp.com/layout v0.3.3
+	webtyp.com/storage v0.1.1
+	webtyp.com/svg v0.3.14
+	webtyp.com/unixid v0.2.28
+)
 
-require webtyp.com/json v0.5.25 // indirect
+require (
+	webtyp.com/color v0.1.2 // indirect
+	webtyp.com/css v0.4.22 // indirect
+	webtyp.com/date v0.0.7 // indirect
+	webtyp.com/font v0.0.5 // indirect
+	webtyp.com/form v0.4.19 // indirect
+	webtyp.com/icons v0.0.7 // indirect
+	webtyp.com/json v0.5.25 // indirect
+	webtyp.com/widget v0.6.32 // indirect
+)

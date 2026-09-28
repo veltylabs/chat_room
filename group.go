@@ -235,6 +235,28 @@ type fmtKeyValueInt struct {
 	Value int64
 }
 
+func (m *Module) ListGroupCandidates(tenantID string) ([]Participant, error) {
+	if tenantID == "" {
+		tenantID = m.tenantID
+	}
+
+	opts, err := m.participants.ParticipantOptions(tenantID)
+	if err != nil {
+		return nil, err
+	}
+
+	participants := make([]Participant, len(opts))
+	for i, opt := range opts {
+		participants[i] = Participant{
+			UserId: opt.Key,
+			Label:  opt.Value,
+			Online: false,
+		}
+	}
+
+	return participants, nil
+}
+
 func (m *Module) ListGroupMembers(tenantID, roomID string) ([]Participant, error) {
 	if tenantID == "" {
 		tenantID = m.tenantID
