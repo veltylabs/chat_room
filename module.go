@@ -1,7 +1,6 @@
 package chatroom
 
 import (
-	"webtyp.com/ddl"
 	"webtyp.com/events"
 	"webtyp.com/fmt"
 	"webtyp.com/model"
@@ -44,13 +43,6 @@ func New(db *orm.DB, deps Deps) (*Module, error) {
 	}
 	if deps.RetentionDays <= 0 {
 		return nil, fmt.Err("chat_room: Deps.RetentionDays must be greater than zero")
-	}
-
-	if ddlCompiler, ok := db.RawConn().(ddl.Compiler); ok {
-		d := ddl.New(db.RawConn(), ddlCompiler)
-		if err := d.Sync(&Room{}, &Member{}, &Message{}, &Presence{}); err != nil {
-			return nil, err
-		}
 	}
 
 	return &Module{

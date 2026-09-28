@@ -3,21 +3,10 @@ package migrate
 import (
 	chatroom "github.com/veltylabs/chat_room"
 	"webtyp.com/ddl"
-	"webtyp.com/storage"
 )
 
-// Sync migrates the database schema for chat_room models in order:
-// Room, Member, Message, Presence.
-func Sync(conn storage.Conn) error {
-	compiler, ok := conn.(ddl.Compiler)
-	if !ok {
-		return nil
-	}
-	db := ddl.New(conn, compiler)
-	return db.Sync(
-		&chatroom.Room{},
-		&chatroom.Member{},
-		&chatroom.Message{},
-		&chatroom.Presence{},
-	)
+// Migrate reconciles the schema chat_room owns: Room, Member, Message, Presence (in that order: FKs).
+// Deliberately NOT called by New. Sync, not CreateTable: additive, safe to run repeatedly.
+func Migrate(conn ddl.Execer, ddlCompiler ddl.Compiler) error {
+	return ddl.New(conn, ddlCompiler).Sync(&chatroom.Room{}, &chatroom.Member{}, &chatroom.Message{}, &chatroom.Presence{})
 }

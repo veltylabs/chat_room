@@ -51,3 +51,28 @@ func TestBroadcastRoom(t *testing.T) {
 		t.Fatalf("expected broadcast message, got %v", msgs)
 	}
 }
+
+// Posting in General makes the sender a member of it (SendMessage → MarkRead
+// writes a chat_member row). ListRooms then met the room twice — once as the
+// tenant's broadcast, once through that membership — and the inbox showed two
+// "General" rows whose unread counts added up in the rail badge.
+func TestBroadcastRoom_ListedOnceAfterPosting(t *testing.T) {
+	env, err := setupTestEnv("t1", 30, []fmt.KeyValue{{Key: "u1", Value: "Alice"}, {Key: "u2", Value: "Bob"}})
+	if err != nil {
+		t.Fatalf("setup failed: %v", err)
+	}
+	rooms, err := env.module.ListRooms("t1", "u1")
+	if err != nil || len(rooms) != 1 {
+		t.Fatalf("ListRooms = %v, %v; want the broadcast room only", rooms, err)
+	}
+	if _, err := env.module.SendMessage("t1", "u1", rooms[0].RoomId, "hola"); err != nil {
+		t.Fatalf("SendMessage: %v", err)
+	}
+	after, err := env.module.ListRooms("t1", "u1")
+	if err != nil {
+		t.Fatalf("ListRooms: %v", err)
+	}
+	if len(after) != 1 {
+		t.Fatalf("after posting, ListRooms returned %d rooms, want 1 (General listed twice)", len(after))
+	}
+}

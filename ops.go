@@ -6,27 +6,24 @@ import (
 )
 
 const (
-	OpListParticipants = "list_participants"
-	OpHeartbeat        = "heartbeat"
-	OpOpenDirect        = "open_direct"
-	OpListRooms        = "list_rooms"
-	OpListMessages     = "list_messages"
-	OpSendMessage      = "send_message"
-	OpMarkRead         = "mark_read"
-	OpListGroups       = "list_groups"
-	OpSaveGroup        = "save_group"
-	OpSetGroupMembers  = "set_group_members"
-	OpListGroupMembers = "list_group_members"
-	OpDeleteGroup      = "delete_group"
+	OpListParticipants    = "list_participants"
+	OpHeartbeat           = "heartbeat"
+	OpOpenDirect          = "open_direct"
+	OpListRooms           = "list_rooms"
+	OpListMessages        = "list_messages"
+	OpSendMessage         = "send_message"
+	OpMarkRead            = "mark_read"
+	OpListGroups          = "list_groups"
+	OpSaveGroup           = "save_group"
+	OpSetGroupMembers     = "set_group_members"
+	OpListGroupMembers    = "list_group_members"
+	OpListGroupCandidates = "list_group_candidates"
+	OpDeleteGroup         = "delete_group"
 )
 
 var _ router.OperationModule = (*Module)(nil)
 
 func (m *Module) MountOperations(reg router.OperationRegistry) {
-	m.MountOps(reg)
-}
-
-func (m *Module) MountOps(reg router.OperationRegistry) {
 	reg.Operation(OpListParticipants, m.handleListParticipants).
 		Authenticated().
 		Accepts(&ListRoomsArgs{})
@@ -71,6 +68,10 @@ func (m *Module) MountOps(reg router.OperationRegistry) {
 		Requires(ResourceGroup, model.Read).
 		Accepts(&ListGroupMembersArgs{})
 
+	reg.Operation(OpListGroupCandidates, m.handleListGroupCandidates).
+		Requires(ResourceGroup, model.Read).
+		Accepts(&ListRoomsArgs{})
+
 	reg.Operation(OpDeleteGroup, m.handleDeleteGroup).
 		Requires(ResourceGroup, model.Delete).
 		Accepts(&DeleteGroupArgs{})
@@ -84,7 +85,7 @@ func writeError(ctx router.Context, err error) {
 		ctx.WriteStatus(403)
 	case ErrNotFound:
 		ctx.WriteStatus(404)
-	case ErrUnknownUser, ErrSelfDirect, ErrEmptyBody, ErrBodyTooLong, ErrNotGroup:
+	case ErrTenantRequired, ErrUnknownUser, ErrSelfDirect, ErrEmptyBody, ErrBodyTooLong, ErrNotGroup:
 		ctx.WriteStatus(400)
 	default:
 		ctx.WriteStatus(500)
@@ -339,6 +340,30 @@ func (m *Module) handleListGroupMembers(ctx router.Context) {
 	}
 
 	participants, err := m.ListGroupMembers(args.TenantId, args.RoomId)
+	if err != nil {
+		writeError(ctx, err)
+		return
+	}
+
+	var list ParticipantList
+	for i := range participants {
+		list = append(list, &participants[i])
+	}
+	_ = ctx.Encode(&list)
+}
+
+func (m *Module) handleListGroupCandidates(ctx router.Context) {
+	var args ListRoomsArgs
+	if err := ctx.Decode(&args); err != nil {
+		ctx.WriteStatus(400)
+		return
+	}
+	if err := args.Validate(model.ActionRead); err != nil {
+		ctx.WriteStatus(400)
+		return
+	}
+
+	participants, err := m.ListGroupCandidates(args.TenantId)
 	if err != nil {
 		writeError(ctx, err)
 		return

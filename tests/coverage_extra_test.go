@@ -35,7 +35,7 @@ func TestAllOpsAndViews(t *testing.T) {
 			return true
 		},
 	})
-	env.module.MountOps(r)
+	env.module.MountOperations(r)
 
 	// ListParticipants Op
 	ctx := &mock.Context{InBody: []byte(`{"tenant_id":"t1"}`)}
