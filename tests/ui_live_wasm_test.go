@@ -3,11 +3,14 @@
 package tests
 
 import (
+	"syscall/js"
 	"testing"
 
 	chatroom "github.com/veltylabs/chat_room"
 	"github.com/veltylabs/chat_room/seed"
 	"github.com/veltylabs/chat_room/ui"
+	"webtyp.com/components/inboxlist"
+	"webtyp.com/dom"
 	"webtyp.com/events/mock"
 	"webtyp.com/fmt"
 	"webtyp.com/layout/platformd"
@@ -65,6 +68,20 @@ func TestChatScreenLiveWasm(t *testing.T) {
 		t.Fatalf("ui.Browser failed: %v", err)
 	}
 
+	doc := js.Global().Get("document")
+	root := doc.Call("createElement", "div")
+	root.Set("id", "chat-live-root")
+	doc.Get("body").Call("appendChild", root)
+	if err := dom.Render("chat-live-root", chatMod.View()); err != nil {
+		t.Fatalf("dom.Render: %v", err)
+	}
+
+	// 0. The inbox lists u1's three rooms: General, Recepción, the direct room with Bruno.
+	rowSel := "." + string(inboxlist.NameInboxList.Class(inboxlist.PartRow))
+	if n := root.Call("querySelectorAll", rowSel).Get("length").Int(); n != 3 {
+		t.Fatalf("inbox rows = %d, want 3", n)
+	}
+
 	// 1. Unread badge initially
 	badged := chatMod.(platformd.Badged)
 	badge := badged.Badge()
@@ -110,5 +127,25 @@ func TestChatScreenLiveWasm(t *testing.T) {
 	}
 	if groupsMod.ModelName() != ui.GroupsID {
 		t.Fatalf("expected ModelName %q, got %q", ui.GroupsID, groupsMod.ModelName())
+	}
+	groot := doc.Call("createElement", "div")
+	groot.Set("id", "chat-groups-root")
+	doc.Get("body").Call("appendChild", groot)
+	if err := dom.Render("chat-groups-root", groupsMod.View()); err != nil {
+		t.Fatalf("dom.Render groups: %v", err)
+	}
+	// Miembros: every participant (u1 included), Recepción's members (u1, u2) checked.
+	boxes := groot.Call("querySelectorAll", "input[type='checkbox'][data-user-id]")
+	if n := boxes.Get("length").Int(); n != 3 {
+		t.Fatalf("member checkboxes = %d, want 3", n)
+	}
+	checked := 0
+	for i := 0; i < 3; i++ {
+		if boxes.Call("item", i).Get("checked").Bool() {
+			checked++
+		}
+	}
+	if checked != 2 {
+		t.Fatalf("checked members = %d, want 2 (Recepción = u1, u2)", checked)
 	}
 }

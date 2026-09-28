@@ -197,6 +197,11 @@ func (m *Module) ListRooms(tenantID, userID string) ([]RoomSummary, error) {
 			return nil, err
 		}
 		for _, r := range memRooms {
+			// Posting in General makes the sender a member of it; it is already
+			// listed above as the tenant's broadcast room.
+			if r.Kind == KindBroadcast {
+				continue
+			}
 			allRooms = append(allRooms, r)
 		}
 	}

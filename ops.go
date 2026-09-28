@@ -6,19 +6,19 @@ import (
 )
 
 const (
-	OpListParticipants   = "list_participants"
-	OpHeartbeat          = "heartbeat"
+	OpListParticipants    = "list_participants"
+	OpHeartbeat           = "heartbeat"
 	OpOpenDirect          = "open_direct"
-	OpListRooms          = "list_rooms"
-	OpListMessages       = "list_messages"
-	OpSendMessage        = "send_message"
-	OpMarkRead           = "mark_read"
-	OpListGroups         = "list_groups"
-	OpSaveGroup          = "save_group"
-	OpSetGroupMembers    = "set_group_members"
-	OpListGroupMembers   = "list_group_members"
+	OpListRooms           = "list_rooms"
+	OpListMessages        = "list_messages"
+	OpSendMessage         = "send_message"
+	OpMarkRead            = "mark_read"
+	OpListGroups          = "list_groups"
+	OpSaveGroup           = "save_group"
+	OpSetGroupMembers     = "set_group_members"
+	OpListGroupMembers    = "list_group_members"
 	OpListGroupCandidates = "list_group_candidates"
-	OpDeleteGroup        = "delete_group"
+	OpDeleteGroup         = "delete_group"
 )
 
 var _ router.OperationModule = (*Module)(nil)
