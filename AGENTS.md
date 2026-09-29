@@ -24,7 +24,7 @@ A module's **non-test** Go files may import, from `github.com/webtyp/*`:
 | Package | Role | Why it's a port, not a concrete dependency |
 |---|---|---|
 | `model` | `Model`/`Fielder`/`Encodable`/`Decodable`/`IDGenerator`/`Definition` | Schema + codec *interfaces*; concrete encoders (`json`, `jsvalue`) live outside |
-| `router` | `OpModule`/`OpRegistry`/`Context`/`Caller` | Transport-agnostic; a module implements `OpModule`, never a concrete server |
+| `router` | `OperationModule`/`OperationRegistry`/`Context`/`Caller` | Transport-agnostic; a module implements `OperationModule`, never a concrete server |
 | `view` | `Presenter`, `view.New(...)` | UI contract; the renderer (`layout/crudview` or any other) is injected by the app |
 | `events` | `Publisher`/`Subscriber`/`Event` | Pub/sub contract; the broker (in-proc, `sse`, a queue) is injected |
 | `orm` | `*orm.DB`, query builder (`Create`/`Update`/`Delete`/`Query`) | Ergonomic layer over `storage.Conn` — the equivalent of `database/sql`, backend-agnostic by construction |
@@ -50,7 +50,7 @@ calls `orm.New(conn)`. A module importing them does **not** know or care which b
   this whitelist exists to prevent. Backend integration tests belong to the composition-root app
   repo, never to the module.
 - **A concrete transport**: `webtyp/mcp`, `webtyp/server`/`httpd`, or anything importing
-  `net/http`. A module speaks `router.OpModule`; the app decides which transport harvests it.
+  `net/http`. A module speaks `router.OperationModule`; the app decides which transport harvests it.
 - **A concrete ID generator**: `webtyp/unixid`. Accept `model.IDGenerator` via `Deps` instead —
   never construct one inside the module.
 - **A concrete encoder**: `webtyp/json`, `webtyp/jsvalue`. A module's models implement
@@ -62,7 +62,7 @@ calls `orm.New(conn)`. A module importing them does **not** know or care which b
   renderer that draws that `Presenter`.
 - **A self-declared port that duplicates an ecosystem contract**: no local `EventPublisher`,
   `UIAdapter`, `IDGenerator`, or `CatalogService`-as-transport-shim interface that intersects
-  `events.Publisher`/`view.Presenter`/`model.IDGenerator`/`router.OpModule`. If a boundary needs a
+  `events.Publisher`/`view.Presenter`/`model.IDGenerator`/`router.OperationModule`. If a boundary needs a
   contract this list doesn't name, that is a defect **upstream** (in `model`/`router`/`view`/`events`/
   `orm`), fixed there and consumed here — never patched locally. A module may still declare its own
   narrow cross-module reader interfaces (`CatalogReader`, `StaffReader`, …) for **domain** data it
@@ -157,26 +157,15 @@ reflection-free and TinyGo-sized. A module targets `wasm`/TinyGo first, so it fo
 - **Identity**: `Deps.IDs model.IDGenerator`, required. The module calls `m.ids.NewID()`; it never
   constructs a generator.
 - **Persistence**: `New(db *orm.DB, deps Deps)` receives an already-connected `*orm.DB` (backed by
-  whatever `storage.Conn` the app chose) and owns its own schema migration via
-  `github.com/webtyp/ddl`, replacing the removed `orm.DB.CreateTable`. `ddl.New` takes **two**
-  arguments — `ddl.New(conn storage.Conn, ddlCompiler ddl.Compiler)` — and `ddl.Compiler` is a
-  capability only SQL backends (`sqlt`, `postgres`) implement; the in-memory test backend
-  (`storage/mem`) does not, because it creates tables lazily on first `Exec` and needs no DDL at all.
-  So the module type-asserts for the capability instead of assuming it (the same idiom
-  `storage.TxExecutor` already uses for optional transactions):
-  ```go
-  if ddlCompiler, ok := db.RawConn().(ddl.Compiler); ok {
-      if err := ddl.New(db.RawConn(), ddlCompiler).CreateTable(&CatalogItem{}); err != nil {
-          return nil, err
-      }
-  }
-  ```
-  Against `storage/mem` (module tests) this is a no-op — nothing to create. Against a real SQL
-  backend it migrates the schema, exactly like the old `orm.DB.CreateTable` did. The module never
-  receives a raw connection string or picks a driver.
-- **Transport**: the module implements `router.OpModule` — `ModelName() string` +
-  `MountOps(reg router.OpRegistry)`, registering each operation with `.Requires(resource, action)`
-  and `.Accepts(&ArgsType{})`. It never implements `router.APIModule`/`Router`, and never sees
+  whatever `storage.Conn` the app chose) and **never creates tables**. The module's schema lives in
+  its `migrate/` sub-package (see below): `func Migrate(conn ddl.Execer, c ddl.Compiler) error`,
+  which calls `ddl.New(conn, c).Sync(&Entity{}, …)` for every table the module owns. `Sync` only
+  creates what is missing (`CREATE TABLE IF NOT EXISTS`, never `ALTER`/`DROP`). The app runs it from
+  its own `cmd/migrate`, a separate explicit step — never at server start. Module tests over
+  `storage/mem` do not need it. The module never receives a raw connection string or picks a driver.
+- **Transport**: the module implements `router.OperationModule` — `ModelName() string` +
+  `MountOperations(reg router.OperationRegistry)`, registering each operation with
+  `reg.Operation(name, handler)` followed by `.Requires(resource, action)` and `.Accepts(&ArgsType{})`. It never implements `router.APIModule`/`Router`, and never sees
   `mcp.Tool`/`mcp.ToolProvider`.
 - **View**: `NewView(caller router.Caller) view.Presenter`, built with `view.New(...)` — importing
   only `view`+`model`+`router`. The app supplies both the `router.Caller` and the renderer that draws
@@ -189,10 +178,14 @@ reflection-free and TinyGo-sized. A module targets `wasm`/TinyGo first, so it fo
   (no import of A). The composition root wires concrete instances together. Root domain packages never import
   each other; only ui/, seed/ and web/ may, upstream only.
 
-## ui/, seed/ and web/ — the module's own view and demo
+## migrate/, ui/, seed/ and web/ — the module's schema, view and demo
 
-The whitelist and blacklist above apply to the **root domain package**. Three sub-packages are
+The whitelist and blacklist above apply to the **root domain package**. Four sub-packages are
 exempt, and only them:
+
+- `migrate/` (package `migrate`) holds the schema: `Migrate(conn ddl.Execer, c ddl.Compiler) error`
+  over `ddl.New(conn, c).Sync(...)`. It may import only `webtyp.com/ddl`, `webtyp.com/model` and the
+  module's root package. The app's `cmd/migrate` calls it; nothing else does.
 
 - `ui/` (package `ui`, no build tag; `css.go`/`svg.go` tagged `!wasm`) may import
   `webtyp.com/layout/*`, `webtyp.com/components/*`, `dom`, `html`, `css`, `svg`, `widget`. It is
@@ -219,7 +212,7 @@ lives in the most-downstream module it touches.
 - Runner: `gotest`, never `go test` directly (once installed via
   `go install github.com/webtyp/devflow/cmd/gotest@latest`).
 - A module's own tests build its `*orm.DB` over `storage/mem` (`orm.New(mem.New())`), drive
-  `MountOps` against `router/mock` (satisfies `router.OpRegistry`), and exercise the `view.Presenter`
+  `MountOperations` against `router/mock` (satisfies `router.OperationRegistry`), and exercise the `view.Presenter`
   against `view/conformance`'s `FakeCaller` or a hand-rolled fake `router.Caller` — never a concrete
   DB, transport, or renderer.
 - Tests live in `tests/` (package `tests`, external — exercises only the exported API), per the
@@ -237,7 +230,7 @@ lives in the most-downstream module it touches.
 - A module whose Definitions carry form widgets includes the widget-regression test: `form.New(id,
   &GeneratedArgs{})` yields exactly the expected inputs — catches a regeneration that silently
   loses widgets.
-- Compile-time contract checks belong next to the implementation: `var _ router.OpModule =
+- Compile-time contract checks belong next to the implementation: `var _ router.OperationModule =
   (*Module)(nil)`.
 
 ## Publishing / dispatch
