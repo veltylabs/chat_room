@@ -9,7 +9,7 @@ require (
 	webtyp.com/input v0.0.10
 	webtyp.com/model v0.2.0
 	webtyp.com/orm v0.12.6
-	webtyp.com/router v0.2.1
+	webtyp.com/router v0.3.0
 	webtyp.com/time v0.5.7
 	webtyp.com/view v0.6.10
 )
