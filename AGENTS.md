@@ -159,8 +159,9 @@ reflection-free and TinyGo-sized. A module targets `wasm`/TinyGo first, so it fo
 - **Persistence**: `New(db *orm.DB, deps Deps)` receives an already-connected `*orm.DB` (backed by
   whatever `storage.Conn` the app chose) and **never creates tables**. The module's schema lives in
   its `migrate/` sub-package (see below): `func Migrate(conn ddl.Execer, c ddl.Compiler) error`,
-  which calls `ddl.New(conn, c).Sync(&Entity{}, …)` for every table the module owns. `Sync` only
-  creates what is missing (`CREATE TABLE IF NOT EXISTS`, never `ALTER`/`DROP`). The app runs it from
+  which calls `ddl.New(conn, c).Sync(&Entity{}, …)` for every table the module owns. `Sync` creates
+  missing tables and adds missing columns; it never drops or changes an existing one
+  (so a new field must be optional: a `NotNull` column cannot be added to a table with rows). The app runs it from
   its own `cmd/migrate`, a separate explicit step — never at server start. Module tests over
   `storage/mem` do not need it. The module never receives a raw connection string or picks a driver.
 - **Transport**: the module implements `router.OperationModule` — `ModelName() string` +
