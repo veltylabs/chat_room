@@ -18,7 +18,7 @@ require (
 	webtyp.com/components v0.7.7
 	webtyp.com/dom v0.13.17
 	webtyp.com/html v0.0.24
-	webtyp.com/layout v0.3.3
+	webtyp.com/layout v0.3.15
 	webtyp.com/storage v0.1.1
 	webtyp.com/svg v0.3.14
 	webtyp.com/unixid v0.2.28
@@ -37,6 +37,5 @@ require (
 
 replace (
 	webtyp.com/css => ../../../webtyp/css
-	webtyp.com/layout => ../../../webtyp/layout
 	webtyp.com/widget => ../../../webtyp/widget
 )
