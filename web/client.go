@@ -6,6 +6,7 @@ import (
 	chatroom "github.com/veltylabs/chat_room"
 	"github.com/veltylabs/chat_room/seed"
 	"github.com/veltylabs/chat_room/ui"
+	"webtyp.com/components/themetoggle"
 	"webtyp.com/dom"
 	"webtyp.com/events/mock"
 	"webtyp.com/fmt"
@@ -81,15 +82,13 @@ func main() {
 		panic(err)
 	}
 
-	groupsMod, err := ui.GroupsBrowser(caller, ids, demoTenantID)
-	if err != nil {
-		panic(err)
-	}
-
 	p := &platformd.Platform{
-		AppName:   ui.DefaultLabel + " — demo",
-		User:      demoUser{},
-		Modules:   []platformd.UIModule{chatMod, groupsMod},
+		AppName: ui.DefaultLabel + " — demo",
+		User:    demoUser{},
+		UserActions: func() dom.Component {
+			return &themetoggle.ThemeToggle{}
+		},
+		Modules:   []platformd.UIModule{chatMod},
 		DefaultID: ui.ID,
 	}
 

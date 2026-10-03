@@ -34,8 +34,3 @@ require (
 	webtyp.com/json v0.5.27 // indirect
 	webtyp.com/widget v0.6.32 // indirect
 )
-
-replace (
-	webtyp.com/css => ../../../webtyp/css
-	webtyp.com/widget => ../../../webtyp/widget
-)

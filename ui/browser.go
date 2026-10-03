@@ -3,10 +3,12 @@ package ui
 import (
 	chatroom "github.com/veltylabs/chat_room"
 	"webtyp.com/components/countbadge"
+	"webtyp.com/components/decktabs"
 	"webtyp.com/dom"
 	"webtyp.com/events"
 	"webtyp.com/fmt"
 	"webtyp.com/layout/chatview"
+	"webtyp.com/layout/crudview"
 	"webtyp.com/layout/platformd"
 	"webtyp.com/model"
 	"webtyp.com/router"
@@ -15,9 +17,10 @@ import (
 )
 
 type options struct {
-	label  string
-	sub    events.Subscriber
-	userID string
+	label    string
+	sub      events.Subscriber
+	userID   string
+	noGroups bool
 }
 
 type Option func(*options)
@@ -32,6 +35,12 @@ func WithInbox(sub events.Subscriber, userID string) Option {
 	return func(o *options) {
 		o.sub = sub
 		o.userID = userID
+	}
+}
+
+func WithoutGroups() Option {
+	return func(o *options) {
+		o.noGroups = true
 	}
 }
 
@@ -67,8 +76,43 @@ func Browser(caller router.Caller, ids model.IDGenerator, tenantID string, opts 
 		}
 	}
 
+	var screenTabs *decktabs.DeckTabs
+	if !o.noGroups && caller != nil && ids != nil {
+		crudView, err := crudview.New(crudview.Config{
+			ParentID:  GroupsID + ".list",
+			Presenter: chatroom.NewGroupView(caller),
+			IDs:       ids,
+		})
+		if err == nil {
+			mTab := newMembersTab(caller, tenantID)
+			screenTabs = &decktabs.DeckTabs{
+				Items: []decktabs.Item{
+					{
+						ID:    ID + ".chat",
+						Label: "Chat",
+						Icon:  Icon(ID),
+						Panel: v,
+					},
+					{
+						ID:    GroupsID + ".groups",
+						Label: "Grupos",
+						Icon:  Icon(GroupsID),
+						Panel: crudView,
+					},
+					{
+						ID:    GroupsID + ".members",
+						Label: "Miembros",
+						Icon:  svg.Icon("user"),
+						Panel: mTab,
+					},
+				},
+			}
+		}
+	}
+
 	m.screen = &screen{
-		m: m,
+		m:    m,
+		tabs: screenTabs,
 	}
 
 	if o.sub != nil && o.userID != "" {
@@ -129,11 +173,19 @@ func atoi(s string) int {
 type screen struct {
 	dom.Element
 	m     *chatModule
+	tabs  *decktabs.DeckTabs
 	timer time.Timer
 }
 
 func (s *screen) Render() *dom.Element {
-	return dom.NewElement("div").Attr("data-chat-screen", "").Child(s.m.view)
+	var content dom.Component = s.m.view
+	if s.tabs != nil {
+		content = s.tabs
+	}
+	return dom.NewElement("div").
+		Attr("data-chat-screen", "").
+		Attr("style", "height:100%;min-height:0;display:flex;flex-direction:column;overflow:hidden;").
+		Child(content)
 }
 
 func (s *screen) Init(ctx dom.Ctx) {
