@@ -15,7 +15,7 @@ require (
 )
 
 require (
-	webtyp.com/components v0.7.6
+	webtyp.com/components v0.7.7
 	webtyp.com/dom v0.13.17
 	webtyp.com/html v0.0.24
 	webtyp.com/layout v0.3.3
@@ -26,11 +26,17 @@ require (
 
 require (
 	webtyp.com/color v0.1.2 // indirect
-	webtyp.com/css v0.4.22 // indirect
+	webtyp.com/css v0.4.24 // indirect
 	webtyp.com/date v0.0.7 // indirect
 	webtyp.com/font v0.0.5 // indirect
 	webtyp.com/form v0.4.19 // indirect
 	webtyp.com/icons v0.0.7 // indirect
 	webtyp.com/json v0.5.27 // indirect
 	webtyp.com/widget v0.6.32 // indirect
+)
+
+replace (
+	webtyp.com/css => ../../../webtyp/css
+	webtyp.com/layout => ../../../webtyp/layout
+	webtyp.com/widget => ../../../webtyp/widget
 )
