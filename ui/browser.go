@@ -137,6 +137,7 @@ func (m *chatModule) ModelName() string                { return m.id }
 func (m *chatModule) Label() string                    { return m.label }
 func (m *chatModule) Icon() svg.Icon                   { return Icon(m.id) }
 func (m *chatModule) View() dom.Component              { return m.screen }
+func (m *chatModule) Activate()                        { m.onPush() }
 func (m *chatModule) Badge() *countbadge.CountBadge    { return m.badge }
 func (m *chatModule) UseNotifier(n platformd.Notifier) { m.notifier = n }
 

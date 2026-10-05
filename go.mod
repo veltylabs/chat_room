@@ -18,7 +18,7 @@ require (
 	webtyp.com/components v0.8.6
 	webtyp.com/dom v0.13.18
 	webtyp.com/html v0.0.24
-	webtyp.com/layout v0.3.15
+	webtyp.com/layout v0.3.23
 	webtyp.com/storage v0.1.1
 	webtyp.com/svg v0.3.14
 	webtyp.com/unixid v0.2.28

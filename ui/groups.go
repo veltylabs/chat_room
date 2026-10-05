@@ -57,6 +57,11 @@ func (m *groupsModule) ModelName() string   { return m.id }
 func (m *groupsModule) Label() string       { return m.label }
 func (m *groupsModule) Icon() svg.Icon      { return Icon(m.id) }
 func (m *groupsModule) View() dom.Component { return m.view }
+func (m *groupsModule) Activate() {
+	if m.view != nil {
+		m.view.Activate()
+	}
+}
 
 var _ platformd.UIModule = (*groupsModule)(nil)
 
