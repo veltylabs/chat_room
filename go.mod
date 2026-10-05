@@ -15,8 +15,8 @@ require (
 )
 
 require (
-	webtyp.com/components v0.8.6
-	webtyp.com/dom v0.13.18
+	webtyp.com/components v0.8.7
+	webtyp.com/dom v0.13.19
 	webtyp.com/html v0.0.24
 	webtyp.com/layout v0.3.23
 	webtyp.com/storage v0.1.1
