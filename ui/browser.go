@@ -6,11 +6,11 @@ import (
 	"webtyp.com/components/decktabs"
 	"webtyp.com/dom"
 	"webtyp.com/events"
-	"webtyp.com/fmt"
 	"webtyp.com/layout/chatview"
 	"webtyp.com/layout/crudview"
 	"webtyp.com/layout/platformd"
 	"webtyp.com/model"
+	"webtyp.com/msgtype"
 	"webtyp.com/router"
 	"webtyp.com/svg"
 	"webtyp.com/time"
@@ -72,7 +72,7 @@ func Browser(caller router.Caller, ids model.IDGenerator, tenantID string, opts 
 
 	v.OnError = func(err error) {
 		if m.notifier != nil {
-			m.notifier.Notify(fmt.Msg.Error, err.Error(), platformd.Auto())
+			m.notifier.Notify(msgtype.Error, err.Error(), platformd.Auto())
 		}
 	}
 
@@ -156,7 +156,7 @@ func (m *chatModule) checkUnread() {
 	}
 	now := m.badge.Count.Get()
 	if atoi(now) > atoi(m.lastUnread) && m.notifier != nil {
-		m.notifier.Notify(fmt.Msg.Info, "Nuevo mensaje en el chat", platformd.Auto())
+		m.notifier.Notify(msgtype.Info, "Nuevo mensaje en el chat", platformd.Auto())
 	}
 	m.lastUnread = now
 }
