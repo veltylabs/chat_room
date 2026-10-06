@@ -31,7 +31,7 @@ require (
 	webtyp.com/date v0.0.9 // indirect
 	webtyp.com/escape v0.1.0 // indirect
 	webtyp.com/font v0.0.5 // indirect
-	webtyp.com/form v0.4.23 // indirect
+	webtyp.com/form v0.4.24 // indirect
 	webtyp.com/icons v0.0.7 // indirect
 	webtyp.com/json v0.5.29 // indirect
 	webtyp.com/lang v0.1.3 // indirect
