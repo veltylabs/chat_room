@@ -16,7 +16,7 @@ require (
 
 require (
 	webtyp.com/components v0.8.7
-	webtyp.com/dom v0.13.20
+	webtyp.com/dom v0.13.21
 	webtyp.com/html v0.0.24
 	webtyp.com/layout v0.3.24
 	webtyp.com/storage v0.1.1
@@ -28,6 +28,7 @@ require (
 	webtyp.com/color v0.1.2 // indirect
 	webtyp.com/css v0.4.28 // indirect
 	webtyp.com/date v0.0.7 // indirect
+	webtyp.com/escape v0.1.0 // indirect
 	webtyp.com/font v0.0.5 // indirect
 	webtyp.com/form v0.4.22 // indirect
 	webtyp.com/icons v0.0.7 // indirect
