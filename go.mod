@@ -11,7 +11,7 @@ require (
 	webtyp.com/orm v0.12.6
 	webtyp.com/router v0.3.2
 	webtyp.com/time v0.5.7
-	webtyp.com/view v0.6.26
+	webtyp.com/view v0.6.27
 )
 
 require (
