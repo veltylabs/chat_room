@@ -93,11 +93,11 @@ func (m *Module) OpenDirect(tenantID, userID, otherUserID string) (RoomSummary, 
 		Where("direct_key").Eq(directKey).
 		ReadOne()
 
-	if err != nil && err != orm.ErrNotFound {
+	if err != nil && !orm.IsNotFound(err) {
 		return RoomSummary{}, err
 	}
 
-	if err == orm.ErrNotFound {
+	if orm.IsNotFound(err) {
 		now := m.nowNano()
 		roomID := m.ids.NewID()
 		room = Room{
@@ -249,7 +249,7 @@ func (m *Module) ensureBroadcast(tenantID string) error {
 		ReadOne()
 	if err == nil {
 		found = true
-	} else if err != orm.ErrNotFound {
+	} else if !orm.IsNotFound(err) {
 		return err
 	}
 
@@ -295,7 +295,7 @@ func (m *Module) isMember(tenantID, userID string, room Room) (bool, error) {
 	if err == nil {
 		return true, nil
 	}
-	if err == orm.ErrNotFound {
+	if orm.IsNotFound(err) {
 		return false, nil
 	}
 	return false, err

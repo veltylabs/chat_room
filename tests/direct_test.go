@@ -35,13 +35,13 @@ func TestOpenDirect(t *testing.T) {
 
 	// 2. OpenDirect with self -> ErrSelfDirect
 	_, err = env.module.OpenDirect("t1", "u1", "u1")
-	if err != chatroom.ErrSelfDirect {
+	if err == nil || err.Error() != chatroom.ErrSelfDirect.Error() {
 		t.Fatalf("expected ErrSelfDirect, got %v", err)
 	}
 
 	// 3. OpenDirect with unknown user -> ErrUnknownUser
 	_, err = env.module.OpenDirect("t1", "u1", "u_unknown")
-	if err != chatroom.ErrUnknownUser {
+	if err == nil || err.Error() != chatroom.ErrUnknownUser.Error() {
 		t.Fatalf("expected ErrUnknownUser, got %v", err)
 	}
 }
@@ -69,19 +69,19 @@ func TestDirectPrivacy(t *testing.T) {
 
 	// Third party u3 cannot ListMessages
 	_, err = env.module.ListMessages("t1", "u3", room.RoomId, "", 0)
-	if err != chatroom.ErrNotMember {
+	if err == nil || err.Error() != chatroom.ErrNotMember.Error() {
 		t.Fatalf("expected ErrNotMember for u3 ListMessages, got %v", err)
 	}
 
 	// Third party u3 cannot SendMessage
 	_, err = env.module.SendMessage("t1", "u3", room.RoomId, "Sneaky message")
-	if err != chatroom.ErrNotMember {
+	if err == nil || err.Error() != chatroom.ErrNotMember.Error() {
 		t.Fatalf("expected ErrNotMember for u3 SendMessage, got %v", err)
 	}
 
 	// Third party u3 cannot MarkRead
 	err = env.module.MarkRead("t1", "u3", room.RoomId)
-	if err != chatroom.ErrNotMember {
+	if err == nil || err.Error() != chatroom.ErrNotMember.Error() {
 		t.Fatalf("expected ErrNotMember for u3 MarkRead, got %v", err)
 	}
 }

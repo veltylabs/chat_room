@@ -67,7 +67,7 @@ func (m *Module) Heartbeat(tenantID, userID string) ([]Participant, error) {
 		if err != nil {
 			return nil, err
 		}
-	} else if err == orm.ErrNotFound {
+	} else if orm.IsNotFound(err) {
 		newP := Presence{
 			TenantId: tenantID,
 			UserId:   userID,

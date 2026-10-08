@@ -78,18 +78,23 @@ func (m *Module) MountOperations(reg router.OperationRegistry) {
 }
 
 func writeError(ctx router.Context, err error) {
-	switch err {
-	case ErrUnauthenticated:
-		ctx.WriteStatus(401)
-	case ErrNotMember:
-		ctx.WriteStatus(403)
-	case ErrNotFound:
-		ctx.WriteStatus(404)
-	case ErrTenantRequired, ErrUnknownUser, ErrSelfDirect, ErrEmptyBody, ErrBodyTooLong, ErrNotGroup:
-		ctx.WriteStatus(400)
-	default:
-		ctx.WriteStatus(500)
+	if e, ok := err.(domainError); ok {
+		switch e {
+		case ErrUnauthenticated:
+			ctx.WriteStatus(401)
+			return
+		case ErrNotMember:
+			ctx.WriteStatus(403)
+			return
+		case ErrNotFound:
+			ctx.WriteStatus(404)
+			return
+		case ErrTenantRequired, ErrUnknownUser, ErrSelfDirect, ErrEmptyBody, ErrBodyTooLong, ErrNotGroup:
+			ctx.WriteStatus(400)
+			return
+		}
 	}
+	ctx.WriteStatus(500)
 }
 
 func (m *Module) handleListParticipants(ctx router.Context) {

@@ -161,3 +161,11 @@ lista, se migra igual. `x == nil` y `x != nil` están bien.
 
 Las de `AGENTS.md`, más: nada de `reflect`, `unsafe`, `errors.Is`/`errors.As`, ni `==`/`!=`/`switch`
 entre valores de interfaz con operandos no nil. No tocar otros repos.
+
+## Executor notes
+- Added `domainError` in `model.go` to replace interface-based errors, to avoid pulling reflectlite into the wasm binary.
+- Updated all occurrences of `err == orm.ErrNotFound` and `err != orm.ErrNotFound` to use `orm.IsNotFound(err)` instead.
+- Refactored `switch err { ... }` in `ops.go` to use type assertion first (`if e, ok := err.(domainError); ok { switch e { ... } }`).
+- Updated the assertions in test files to use `err == nil || err.Error() != chatroom.ErrX.Error()` since `domainError` is unexported and `tests` is an external test package, which restricts the ability to use `err.(domainError)`.
+- Replaced `fmt.Err` usage in definitions of sentinel errors.
+- Added `TestSentinelErrors` to guarantee the underlying sentinel error messages match exactly the text prior to changes.

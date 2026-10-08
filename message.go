@@ -52,7 +52,7 @@ func (m *Module) ListMessages(tenantID, userID, roomID, afterID string, limit in
 		Where("tenant_id").Eq(tenantID).
 		Where("id").Eq(roomID).
 		ReadOne()
-	if err == orm.ErrNotFound {
+	if orm.IsNotFound(err) {
 		return nil, ErrNotFound
 	}
 	if err != nil {
@@ -74,7 +74,7 @@ func (m *Module) ListMessages(tenantID, userID, roomID, afterID string, limit in
 			Where("room_id").Eq(roomID).
 			Where("id").Eq(afterID).
 			ReadOne()
-		if err == orm.ErrNotFound {
+		if orm.IsNotFound(err) {
 			return nil, ErrNotFound
 		}
 		if err != nil {
@@ -167,7 +167,7 @@ func (m *Module) SendMessage(tenantID, userID, roomID, body string) (MessageView
 		Where("tenant_id").Eq(tenantID).
 		Where("id").Eq(roomID).
 		ReadOne()
-	if err == orm.ErrNotFound {
+	if orm.IsNotFound(err) {
 		return MessageView{}, ErrNotFound
 	}
 	if err != nil {
@@ -286,7 +286,7 @@ func (m *Module) MarkRead(tenantID, userID, roomID string) error {
 		Where("tenant_id").Eq(tenantID).
 		Where("id").Eq(roomID).
 		ReadOne()
-	if err == orm.ErrNotFound {
+	if orm.IsNotFound(err) {
 		return ErrNotFound
 	}
 	if err != nil {
@@ -319,7 +319,7 @@ func (m *Module) MarkRead(tenantID, userID, roomID string) error {
 		)
 	}
 
-	if err == orm.ErrNotFound {
+	if orm.IsNotFound(err) {
 		newMem := Member{
 			TenantId:   tenantID,
 			RoomId:     roomID,

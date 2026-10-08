@@ -43,7 +43,7 @@ func (m *Module) SaveGroup(tenantID, id, name string) (Room, error) {
 			Where("tenant_id").Eq(tenantID).
 			Where("id").Eq(id).
 			ReadOne()
-		if err == orm.ErrNotFound {
+		if orm.IsNotFound(err) {
 			return Room{}, ErrNotFound
 		}
 		if err != nil {
@@ -107,7 +107,7 @@ func (m *Module) SetGroupMembers(tenantID, roomID string, userIDs []string) erro
 		Where("tenant_id").Eq(tenantID).
 		Where("id").Eq(roomID).
 		ReadOne()
-	if err == orm.ErrNotFound {
+	if orm.IsNotFound(err) {
 		return ErrNotFound
 	}
 	if err != nil {
@@ -267,7 +267,7 @@ func (m *Module) ListGroupMembers(tenantID, roomID string) ([]Participant, error
 		Where("tenant_id").Eq(tenantID).
 		Where("id").Eq(roomID).
 		ReadOne()
-	if err == orm.ErrNotFound {
+	if orm.IsNotFound(err) {
 		return nil, ErrNotFound
 	}
 	if err != nil {
@@ -342,7 +342,7 @@ func (m *Module) DeleteGroup(tenantID, id string) error {
 		Where("tenant_id").Eq(tenantID).
 		Where("id").Eq(id).
 		ReadOne()
-	if err == orm.ErrNotFound {
+	if orm.IsNotFound(err) {
 		return ErrNotFound
 	}
 	if err != nil {

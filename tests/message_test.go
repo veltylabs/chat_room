@@ -24,13 +24,13 @@ func TestSendMessageValidation(t *testing.T) {
 
 	// Empty body
 	_, err = env.module.SendMessage("t1", "u1", room.RoomId, "")
-	if err != chatroom.ErrEmptyBody {
+	if err == nil || err.Error() != chatroom.ErrEmptyBody.Error() {
 		t.Fatalf("expected ErrEmptyBody, got %v", err)
 	}
 
 	// Only spaces
 	_, err = env.module.SendMessage("t1", "u1", room.RoomId, "   \n\t  ")
-	if err != chatroom.ErrEmptyBody {
+	if err == nil || err.Error() != chatroom.ErrEmptyBody.Error() {
 		t.Fatalf("expected ErrEmptyBody, got %v", err)
 	}
 
@@ -40,7 +40,7 @@ func TestSendMessageValidation(t *testing.T) {
 		tooLongRunes[i] = 'a'
 	}
 	_, err = env.module.SendMessage("t1", "u1", room.RoomId, string(tooLongRunes))
-	if err != chatroom.ErrBodyTooLong {
+	if err == nil || err.Error() != chatroom.ErrBodyTooLong.Error() {
 		t.Fatalf("expected ErrBodyTooLong, got %v", err)
 	}
 
