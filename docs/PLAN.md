@@ -2,8 +2,9 @@
 PLAN: "fix: detect sentinel errors without == between interfaces (no reflection in wasm)"
 EXECUTOR: jules
 REVIEWER: none
-STATUS: running
+STATUS: review
 SESSION: 9316579022149767910
+PR: https://github.com/veltylabs/chat_room/pull/3
 ---
 
 # Plan — `chat_room`: errores centinela sin `==` entre interfaces
