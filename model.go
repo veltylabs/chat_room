@@ -1,7 +1,6 @@
 package chatroom
 
 import (
-	"webtyp.com/fmt"
 	"webtyp.com/input"
 	"webtyp.com/model"
 )
@@ -218,17 +217,25 @@ var MessageSentEventModel = model.Definition{
 	},
 }
 
+// domainError is the concrete type of this package's sentinel errors. Code
+// compares them by asserting this type and comparing the value: == between two
+// error values compiles, under TinyGo, to runtime.interfaceEqual, which pulls
+// internal/reflectlite into the wasm binary.
+type domainError string
+
+func (e domainError) Error() string { return string(e) }
+
 // Errors (exact text)
-var (
-	ErrNotFound        = fmt.Err("chat_room: not found")
-	ErrTenantRequired  = fmt.Err("chat_room: tenant_id is required")
-	ErrUnauthenticated = fmt.Err("chat_room: authenticated user required")
-	ErrNotMember       = fmt.Err("chat_room: not a member of this room")
-	ErrUnknownUser     = fmt.Err("chat_room: unknown participant")
-	ErrSelfDirect      = fmt.Err("chat_room: cannot open a direct room with yourself")
-	ErrEmptyBody       = fmt.Err("chat_room: message body is empty")
-	ErrBodyTooLong     = fmt.Err("chat_room: message body is too long")
-	ErrNotGroup        = fmt.Err("chat_room: room is not a group")
+const (
+	ErrNotFound        domainError = "chat_room: not found"
+	ErrTenantRequired  domainError = "chat_room: tenant_id is required"
+	ErrUnauthenticated domainError = "chat_room: authenticated user required"
+	ErrNotMember       domainError = "chat_room: not a member of this room"
+	ErrUnknownUser     domainError = "chat_room: unknown participant"
+	ErrSelfDirect      domainError = "chat_room: cannot open a direct room with yourself"
+	ErrEmptyBody       domainError = "chat_room: message body is empty"
+	ErrBodyTooLong     domainError = "chat_room: message body is too long"
+	ErrNotGroup        domainError = "chat_room: room is not a group"
 )
 
 // Events & Topics
