@@ -15,10 +15,10 @@ require (
 )
 
 require (
-	webtyp.com/components v0.8.12
+	webtyp.com/components v0.8.16
 	webtyp.com/dom v0.13.22
 	webtyp.com/html v0.0.24
-	webtyp.com/layout v0.3.32
+	webtyp.com/layout v0.3.35
 	webtyp.com/msgtype v0.1.0
 	webtyp.com/storage v0.1.1
 	webtyp.com/svg v0.3.14
@@ -31,9 +31,9 @@ require (
 	webtyp.com/date v0.0.9 // indirect
 	webtyp.com/escape v0.1.0 // indirect
 	webtyp.com/font v0.0.5 // indirect
-	webtyp.com/form v0.4.24 // indirect
+	webtyp.com/form v0.4.29 // indirect
 	webtyp.com/icons v0.0.7 // indirect
 	webtyp.com/json v0.5.29 // indirect
 	webtyp.com/lang v0.1.3 // indirect
-	webtyp.com/widget v0.6.36 // indirect
+	webtyp.com/widget v0.6.37 // indirect
 )
