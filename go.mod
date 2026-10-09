@@ -20,7 +20,7 @@ require (
 	webtyp.com/html v0.0.24
 	webtyp.com/layout v0.3.35
 	webtyp.com/msgtype v0.1.0
-	webtyp.com/storage v0.1.3
+	webtyp.com/storage v0.1.4
 	webtyp.com/svg v0.3.14
 	webtyp.com/unixid v0.2.28
 )
