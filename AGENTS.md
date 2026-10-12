@@ -203,8 +203,8 @@ exempt, and only them:
 **Dependencies between modules form a DAG.** The root domain package still imports no sibling
 module. `ui/`, `seed/` and `web/` may import the domain, `ui/` and `seed/` packages of **upstream**
 modules only. Current graph: `device_manager`, `item_catalog`, `patient_directory`,
-`business_calendar` (leaves) ← `staff_manager` ← `appointment_booking` ← `clinical_encounter`
-(`appointment_booking` also depends on `item_catalog`, `patient_directory`, `business_calendar`;
+`business_calendar`, `payment_manager` (leaves) ← `staff_manager` ← `appointment_booking` ← `clinical_encounter`
+(`appointment_booking` also depends on `item_catalog`, `patient_directory`, `business_calendar`, `payment_manager`;
 `clinical_encounter` also on `patient_directory` and `staff_manager`). A screen that mixes modules
 lives in the most-downstream module it touches.
 
