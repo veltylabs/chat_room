@@ -1,7 +1,7 @@
 webtyp.com/color v0.1.2 h1:PN2vx9jtlwFsu2juQoaj0GEJMY/ex3fQDcop20V8+ik=
 webtyp.com/color v0.1.2/go.mod h1:p5n4e0KRiPavkkQajtQKoMAU7C+1yx86AZlzMWTJhC8=
-webtyp.com/components v0.8.24 h1:pd2JxTu9rcGEIX0b6Kd5Y9wfHmsGfxbGkRm1W7MhNkc=
-webtyp.com/components v0.8.24/go.mod h1:C6gAZ+i7mU/cIB+1PXjE+JFs0Es9M4FqxT81qqlm754=
+webtyp.com/components v0.8.30 h1:3o4SZeJhe+kjT/uIg8IivuwFsq+ePp86mLCEcCyyiWQ=
+webtyp.com/components v0.8.30/go.mod h1:4VmOE/+BVXOoyo8xsgFOOsq8SIhJYArHqW6BK90p/k0=
 webtyp.com/css v0.4.30 h1:zY135ehYhnTCr+OSYbB2GX/GZ9Nkv60J+MtXjG1rJaI=
 webtyp.com/css v0.4.30/go.mod h1:qbi0OpxKohFtrEzMCFmcM8w1LaLGSd+Nlw+LzLSNZhU=
 webtyp.com/date v0.0.9 h1:CjKFbRJwIU1xhX1uuuB4OlFcs9EnmzIdQ1+ppe2yfj0=
