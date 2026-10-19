@@ -15,10 +15,10 @@ require (
 )
 
 require (
-	webtyp.com/components v0.8.30
+	webtyp.com/components v0.8.34
 	webtyp.com/dom v0.13.26
 	webtyp.com/html v0.0.27
-	webtyp.com/layout v0.3.50
+	webtyp.com/layout v0.3.52
 	webtyp.com/msgtype v0.1.0
 	webtyp.com/storage v0.1.4
 	webtyp.com/svg v0.3.28

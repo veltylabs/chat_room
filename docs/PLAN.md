@@ -127,3 +127,8 @@ git diff --stat main                                                            
 | 2 | `Browser` is the chat only | `ui/browser.go` |
 | 3 | `GroupsBrowser` is a group | `ui/groups.go` |
 | 4 | tests and docs | `tests/ui_live_wasm_test.go`, `docs/ARCHITECTURE.md`, `README.md` |
+
+## Executor notes
+- `ui/groups.go` refactored `GroupsBrowser` to use `platformd.NewGroupUIModule` replacing `decktabs`.
+- `ui/browser.go` removed `decktabs` and `WithoutGroups` function option.
+- Bumps components, layout, widget, form dependencies.
