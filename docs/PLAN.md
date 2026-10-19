@@ -2,8 +2,10 @@
 PLAN: "feat(ui)!: chat group administration is a platformd group (Grupos, Miembros); Browser is the chat only — decktabs is gone from components"
 EXECUTOR: jules
 REVIEWER: none
-STATUS: running
+STATUS: review
 SESSION: 17658227601554359146
+PR: https://github.com/veltylabs/chat_room/pull/4
+REVIEWED_COMMIT: 93c796714e663747f668acfe59046a56093d4d0e
 ---
 
 > Read AGENTS.md at the repo root before any change.
