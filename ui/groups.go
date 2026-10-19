@@ -2,15 +2,16 @@ package ui
 
 import (
 	chatroom "github.com/veltylabs/chat_room"
-	"webtyp.com/components/decktabs"
 	"webtyp.com/dom"
 	"webtyp.com/html"
 	"webtyp.com/layout/crudview"
 	"webtyp.com/layout/platformd"
 	"webtyp.com/model"
 	"webtyp.com/router"
-	"webtyp.com/svg"
 )
+
+// textNoGroupsYet is shown by the Miembros section while no group exists.
+const textNoGroupsYet = "Cree un grupo en la sección Grupos."
 
 func GroupsBrowser(caller router.Caller, ids model.IDGenerator, tenantID string) (platformd.UIModule, error) {
 	crudView, err := crudview.New(crudview.Config{
@@ -24,46 +25,13 @@ func GroupsBrowser(caller router.Caller, ids model.IDGenerator, tenantID string)
 
 	mTab := newMembersTab(caller, tenantID)
 
-	dt := &decktabs.DeckTabs{
-		Items: []decktabs.Item{
-			{
-				ID:    GroupsID + ".groups",
-				Label: "Grupos",
-				Panel: crudView,
-			},
-			{
-				ID:    GroupsID + ".members",
-				Label: "Miembros",
-				Panel: mTab,
-			},
-		},
-	}
+	groupsMod := platformd.NewUIModule(GroupsID+".list", "Grupos", Icon(GroupsID), crudView)
+	membersMod := platformd.NewUIModule(GroupsID+".members", "Miembros", Icon(GroupsID), mTab)
 
-	m := &groupsModule{
-		id:    GroupsID,
-		label: GroupsLabel,
-		view:  dt,
-	}
-
-	return m, nil
+	return platformd.NewGroupUIModule(GroupsID, GroupsLabel, Icon(GroupsID), []platformd.UIModule{
+		groupsMod, membersMod,
+	}), nil
 }
-
-type groupsModule struct {
-	id, label string
-	view      *decktabs.DeckTabs
-}
-
-func (m *groupsModule) ModelName() string   { return m.id }
-func (m *groupsModule) Label() string       { return m.label }
-func (m *groupsModule) Icon() svg.Icon      { return Icon(m.id) }
-func (m *groupsModule) View() dom.Component { return m.view }
-func (m *groupsModule) Activate() {
-	if m.view != nil {
-		m.view.Activate()
-	}
-}
-
-var _ platformd.UIModule = (*groupsModule)(nil)
 
 type membersTab struct {
 	dom.Element
@@ -112,7 +80,7 @@ func (t *membersTab) Init(ctx dom.Ctx) {
 		}
 
 		if resGroups.Len() == 0 {
-			t.boxes.Set([]*dom.Element{dom.NewElement("div").Text("Cree un grupo en la pestaña Grupos.")})
+			t.boxes.Set([]*dom.Element{dom.NewElement("div").Text(textNoGroupsYet)})
 			return
 		}
 
@@ -147,7 +115,7 @@ func (t *membersTab) Init(ctx dom.Ctx) {
 func (t *membersTab) loadMembers() {
 	groupID := t.groupSel.Get()
 	if groupID == "" {
-		t.boxes.Set([]*dom.Element{dom.NewElement("div").Text("Cree un grupo en la pestaña Grupos.")})
+		t.boxes.Set([]*dom.Element{dom.NewElement("div").Text(textNoGroupsYet)})
 		return
 	}
 

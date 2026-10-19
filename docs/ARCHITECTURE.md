@@ -81,5 +81,5 @@ caller := loopback.ActingAs(tenantID, currentUserID, mod)
 chatModule, err := ui.Browser(caller, ids, tenantID, ui.WithInbox(subscriber, currentUserID))
 
 // Módulo de administración de grupos
-groupsModule, err := ui.GroupsBrowser(caller, ids, tenantID)
+groupsMod, err := ui.GroupsBrowser(caller, ids, tenantID)
 ```

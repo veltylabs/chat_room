@@ -128,10 +128,24 @@ func TestChatScreenLiveWasm(t *testing.T) {
 	if groupsMod.ModelName() != ui.GroupsID {
 		t.Fatalf("expected ModelName %q, got %q", ui.GroupsID, groupsMod.ModelName())
 	}
+	gMod, ok := groupsMod.(platformd.GroupModule)
+	if !ok {
+		t.Fatalf("expected groupsMod to implement platformd.GroupModule")
+	}
+	children := gMod.Children()
+	if len(children) != 2 {
+		t.Fatalf("expected 2 children, got %d", len(children))
+	}
+	if children[0].ModelName() != "chat_room.groups.list" {
+		t.Fatalf("expected first child ModelName chat_room.groups.list, got %q", children[0].ModelName())
+	}
+	if children[1].ModelName() != "chat_room.groups.members" {
+		t.Fatalf("expected second child ModelName chat_room.groups.members, got %q", children[1].ModelName())
+	}
 	groot := doc.Call("createElement", "div")
 	groot.Set("id", "chat-groups-root")
 	doc.Get("body").Call("appendChild", groot)
-	if err := dom.Render("chat-groups-root", groupsMod.View()); err != nil {
+	if err := dom.Render("chat-groups-root", children[1].View()); err != nil {
 		t.Fatalf("dom.Render groups: %v", err)
 	}
 	// Miembros: every participant (u1 included), Recepción's members (u1, u2) checked.

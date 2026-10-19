@@ -2,8 +2,10 @@
 PLAN: "feat(ui)!: chat group administration is a platformd group (Grupos, Miembros); Browser is the chat only — decktabs is gone from components"
 EXECUTOR: jules
 REVIEWER: none
-STATUS: running
+STATUS: review
 SESSION: 17658227601554359146
+PR: https://github.com/veltylabs/chat_room/pull/4
+REVIEWED_COMMIT: 1d7498f1cf671035de379c82502caa41950b8d98
 ---
 
 > Read AGENTS.md at the repo root before any change.
@@ -127,3 +129,8 @@ git diff --stat main                                                            
 | 2 | `Browser` is the chat only | `ui/browser.go` |
 | 3 | `GroupsBrowser` is a group | `ui/groups.go` |
 | 4 | tests and docs | `tests/ui_live_wasm_test.go`, `docs/ARCHITECTURE.md`, `README.md` |
+
+## Executor notes
+- `ui/groups.go` refactored `GroupsBrowser` to use `platformd.NewGroupUIModule` replacing `decktabs`.
+- `ui/browser.go` removed `decktabs` and `WithoutGroups` function option.
+- Bumps components, layout, widget, form dependencies.
