@@ -2,6 +2,8 @@
 PLAN: "feat(ui)!: chat group administration is a platformd group (Grupos, Miembros); Browser is the chat only — decktabs is gone from components"
 EXECUTOR: jules
 REVIEWER: none
+STATUS: running
+SESSION: 17658227601554359146
 ---
 
 > Read AGENTS.md at the repo root before any change.
