@@ -10,6 +10,9 @@ import (
 	"webtyp.com/router"
 )
 
+// textNoGroupsYet is shown by the Miembros section while no group exists.
+const textNoGroupsYet = "Cree un grupo en la sección Grupos."
+
 func GroupsBrowser(caller router.Caller, ids model.IDGenerator, tenantID string) (platformd.UIModule, error) {
 	crudView, err := crudview.New(crudview.Config{
 		ParentID:  GroupsID + ".list",
@@ -77,7 +80,7 @@ func (t *membersTab) Init(ctx dom.Ctx) {
 		}
 
 		if resGroups.Len() == 0 {
-			t.boxes.Set([]*dom.Element{dom.NewElement("div").Text("Cree un grupo en la sección Grupos.")})
+			t.boxes.Set([]*dom.Element{dom.NewElement("div").Text(textNoGroupsYet)})
 			return
 		}
 
@@ -112,7 +115,7 @@ func (t *membersTab) Init(ctx dom.Ctx) {
 func (t *membersTab) loadMembers() {
 	groupID := t.groupSel.Get()
 	if groupID == "" {
-		t.boxes.Set([]*dom.Element{dom.NewElement("div").Text("Cree un grupo en la sección Grupos.")})
+		t.boxes.Set([]*dom.Element{dom.NewElement("div").Text(textNoGroupsYet)})
 		return
 	}
 
