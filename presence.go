@@ -1,16 +1,17 @@
 package chatroom
 
 import (
+	"webtyp.com/time"
 	"webtyp.com/model"
 	"webtyp.com/orm"
 )
 
-func isOnline(nowNano int64, lastSeenNano int64) bool {
-	if lastSeenNano <= 0 {
+func isOnline(now, lastSeen time.Nano) bool {
+	if lastSeen <= 0 {
 		return false
 	}
-	diffSec := (nowNano - lastSeenNano) / 1_000_000_000
-	return diffSec < PresenceWindowSeconds
+	return now-lastSeen < presenceWindow.Nano()
+
 }
 
 func (m *Module) getPresences(tenantID string) ([]Presence, error) {

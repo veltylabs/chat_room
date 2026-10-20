@@ -1,6 +1,7 @@
 package tests
 
 import (
+	"webtyp.com/time"
 	chatroom "github.com/veltylabs/chat_room"
 	"webtyp.com/events/mock"
 	"webtyp.com/fmt"
@@ -30,7 +31,7 @@ type testEnv struct {
 	idGen     *mockIDGen
 	parts     *mockParticipants
 	broker    *mock.Broker
-	clockTime int64
+	clockTime time.Nano
 	module    *chatroom.Module
 }
 
@@ -55,7 +56,7 @@ func setupTestEnv(tenantID string, retentionDays int, participantList []fmt.KeyV
 		TenantID:      tenantID,
 		RetentionDays: retentionDays,
 		Publisher:     broker,
-		Clock:         func() int64 { return env.clockTime },
+		Clock:         func() time.Nano { return env.clockTime },
 	}
 
 	m, err := chatroom.New(db, deps)

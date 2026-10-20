@@ -2,10 +2,8 @@
 PLAN: "refactor: typed instants of webtyp/time v0.6 in chat_room — every instant field is time.Unix or time.Nano, no unit arithmetic"
 EXECUTOR: jules
 REVIEWER: none
-STATUS: review
+STATUS: running
 SESSION: 15604606983932910648
-PR: https://github.com/veltylabs/chat_room/pull/5
-REVIEWED_COMMIT: 3d91e55acab467156f928ae2daa64b382f924189
 ---
 
 > Read AGENTS.md at the repo root before any change. This plan is complete: do not guess; if something does not fit, stop and ask in the PR.

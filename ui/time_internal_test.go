@@ -1,6 +1,7 @@
 package ui
 
 import (
+	"webtyp.com/time"
 	"testing"
 )
 
@@ -13,7 +14,7 @@ func TestClockAndShortTime(t *testing.T) {
 		t.Fatalf("expected empty string for shortTime(0), got %q", got)
 	}
 
-	fixedNs := int64(1700000000000000000)
+	fixedNs := time.Nano(1700000000000000000)
 	c := clock(fixedNs)
 	if len(c) != 5 {
 		t.Fatalf("expected clock format 'HH:MM' (length 5), got %q", c)

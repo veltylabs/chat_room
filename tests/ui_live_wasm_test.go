@@ -30,9 +30,9 @@ func (wasmParticipants) ParticipantOptions(tenantID string) ([]fmt.KeyValue, err
 	}, nil
 }
 
-func wasmClock() func() int64 {
-	var last int64 = time.Now()
-	return func() int64 {
+func wasmClock() func() time.Nano {
+	last := time.NowNano()
+	return func() time.Nano {
 		last += 1_000_000
 		return last
 	}

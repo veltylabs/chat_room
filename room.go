@@ -1,16 +1,16 @@
 package chatroom
 
 import (
+	"webtyp.com/time"
 	"webtyp.com/model"
 	"webtyp.com/orm"
-	"webtyp.com/time"
 )
 
-func (m *Module) nowNano() int64 {
+func (m *Module) nowNano() time.Nano {
 	if m.clock != nil {
 		return m.clock()
 	}
-	return time.Now()
+	return time.NowNano()
 }
 
 func (m *Module) ListParticipants(tenantID, userID string) ([]Participant, error) {
@@ -38,10 +38,10 @@ func (m *Module) ListParticipants(tenantID, userID string) ([]Participant, error
 		if opt.Key == userID {
 			continue
 		}
-		var lastSeen int64
+		var lastSeen time.Nano
 		for _, p := range presences {
 			if p.UserId == opt.Key {
-				lastSeen = p.LastSeen
+				lastSeen = time.Nano(p.LastSeen)
 				break
 			}
 		}
@@ -314,7 +314,7 @@ func (m *Module) getRoomSummary(tenantID, userID string, room Room, title string
 		return RoomSummary{}, err
 	}
 
-	var lastMsgAt int64
+	var lastMsgAt time.Nano
 	var lastPreview string
 	if len(messages) > 0 {
 		lastMsg := messages[len(messages)-1]
@@ -322,7 +322,7 @@ func (m *Module) getRoomSummary(tenantID, userID string, room Room, title string
 		lastPreview = truncateString(lastMsg.Body, PreviewLength)
 	}
 
-	var lastReadAt int64
+	var lastReadAt time.Nano
 	var mem Member
 	err = m.db.Query(&mem).
 		Where("tenant_id").Eq(tenantID).
@@ -330,7 +330,7 @@ func (m *Module) getRoomSummary(tenantID, userID string, room Room, title string
 		Where("user_id").Eq(userID).
 		ReadOne()
 	if err == nil {
-		lastReadAt = mem.LastReadAt
+		lastReadAt = time.Nano(mem.LastReadAt)
 	}
 
 	var unread int64

@@ -35,10 +35,10 @@ func (demoParticipants) ParticipantOptions(tenantID string) ([]fmt.KeyValue, err
 	}, nil
 }
 
-func monotonic() func() int64 {
-	var last int64
-	return func() int64 {
-		now := time.Now()
+func monotonic() func() time.Nano {
+	var last time.Nano
+	return func() time.Nano {
+		now := time.NowNano()
 		if now <= last {
 			now = last + 1
 		}

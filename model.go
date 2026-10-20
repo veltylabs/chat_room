@@ -1,6 +1,7 @@
 package chatroom
 
 import (
+	"webtyp.com/time"
 	"webtyp.com/input"
 	"webtyp.com/model"
 )
@@ -22,7 +23,7 @@ const (
 	MaxBodyLength            = 2000
 	PreviewLength            = 80
 	HeartbeatIntervalSeconds = 30 // lo usa la vista
-	PresenceWindowSeconds    = 90
+	presenceWindow time.Unix = 90
 	DefaultMessagesPageLimit = 50
 )
 
@@ -34,8 +35,8 @@ var RoomModel = model.Definition{
 		{Name: "kind", Type: model.Text(), NotNull: true},
 		{Name: "name", Type: input.Text(), OmitEmpty: true, Permitted: model.Permitted{Maximum: 60}}, // solo group y broadcast; lo edita el admin en el formulario de grupos
 		{Name: "direct_key", Type: model.Text(), OmitEmpty: true},                                    // solo direct: "<idMenor>|<idMayor>"
-		{Name: "created_at", Type: model.Int(), NotNull: true},
-		{Name: "updated_at", Type: model.Int(), OmitEmpty: true},
+		{Name: "created_at", Type: model.NanoTime(), NotNull: true},
+		{Name: "updated_at", Type: model.NanoTime(), OmitEmpty: true},
 	},
 }
 
@@ -45,7 +46,7 @@ var MemberModel = model.Definition{
 		{Name: "tenant_id", Type: model.Text(), NotNull: true},
 		{Name: "room_id", Type: model.Text(), Ref: &RoomModel, DB: &model.FieldDB{PK: true, RefColumn: "id"}, NotNull: true},
 		{Name: "user_id", Type: model.Text(), DB: &model.FieldDB{PK: true}, NotNull: true},
-		{Name: "last_read_at", Type: model.Int()},
+		{Name: "last_read_at", Type: model.NanoTime()},
 	},
 }
 
@@ -58,7 +59,7 @@ var MessageModel = model.Definition{
 		{Name: "sender_id", Type: model.Text(), NotNull: true},
 		{Name: "sender_label", Type: model.Text(), NotNull: true}, // copia del nombre al enviar
 		{Name: "body", Type: model.Text(), NotNull: true},
-		{Name: "created_at", Type: model.Int(), NotNull: true}, // time.Now(), nanosegundos
+		{Name: "created_at", Type: model.NanoTime(), NotNull: true}, // nanosegundos
 	},
 }
 
@@ -67,7 +68,7 @@ var PresenceModel = model.Definition{
 	Fields: model.Fields{
 		{Name: "tenant_id", Type: model.Text(), NotNull: true},
 		{Name: "user_id", Type: model.Text(), DB: &model.FieldDB{PK: true}, NotNull: true},
-		{Name: "last_seen", Type: model.Int(), NotNull: true},
+		{Name: "last_seen", Type: model.NanoTime(), NotNull: true},
 	},
 }
 
@@ -188,7 +189,7 @@ var RoomSummaryModel = model.Definition{
 		{Name: "kind", Type: model.Text(), NotNull: true},
 		{Name: "title", Type: model.Text(), NotNull: true},
 		{Name: "unread", Type: model.Int(), NotNull: true},
-		{Name: "last_message_at", Type: model.Int(), NotNull: true},
+		{Name: "last_message_at", Type: model.NanoTime(), NotNull: true},
 		{Name: "last_preview", Type: model.Text(), NotNull: true},
 	},
 }
@@ -201,7 +202,7 @@ var MessageViewModel = model.Definition{
 		{Name: "sender_id", Type: model.Text(), NotNull: true},
 		{Name: "sender_label", Type: model.Text(), NotNull: true},
 		{Name: "body", Type: model.Text(), NotNull: true},
-		{Name: "created_at", Type: model.Int(), NotNull: true},
+		{Name: "created_at", Type: model.NanoTime(), NotNull: true},
 		{Name: "mine", Type: model.Bool(), NotNull: true},
 		{Name: "read", Type: model.Bool(), NotNull: true},
 	},
