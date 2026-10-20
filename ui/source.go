@@ -122,23 +122,23 @@ func (s *source) OpenDirect(personID string, done func(roomID string, err error)
 	})
 }
 
-func clock(ns int64) string {
+func clock(ns time.Nano) string {
 	if ns == 0 {
 		return ""
 	}
-	t := time.FormatTime(ns)
+	t := time.FormatTime(ns.Unix())
 	if len(t) >= 5 {
 		return t[:5]
 	}
 	return t
 }
 
-func shortTime(ns int64) string {
+func shortTime(ns time.Nano) string {
 	if ns == 0 {
 		return ""
 	}
-	if time.IsToday(ns) {
+	if time.IsToday(ns.Unix()) {
 		return clock(ns)
 	}
-	return time.FormatDate(ns)
+	return time.FormatDate(ns.Unix())
 }

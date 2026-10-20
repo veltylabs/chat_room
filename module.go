@@ -1,6 +1,7 @@
 package chatroom
 
 import (
+	"webtyp.com/time"
 	"webtyp.com/events"
 	"webtyp.com/fmt"
 	"webtyp.com/model"
@@ -18,7 +19,7 @@ type Deps struct {
 	TenantID      string            // requerido — tenant por defecto
 	RetentionDays int               // requerido, > 0 — decisión de cada instalación, sin valor por defecto oculto
 	Publisher     events.Publisher  // opcional — nil: no hay avisos push (la vista igual funciona al recargar)
-	Clock         func() int64      // opcional — nil = time.Now (nanosegundos); inyectable en tests
+	Clock         func() time.Nano      // opcional — nil = time.Now (nanosegundos); inyectable en tests
 }
 
 type Module struct {
@@ -28,7 +29,7 @@ type Module struct {
 	tenantID      string
 	retentionDays int
 	publisher     events.Publisher
-	clock         func() int64
+	clock         func() time.Nano
 }
 
 func New(db *orm.DB, deps Deps) (*Module, error) {

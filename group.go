@@ -1,6 +1,7 @@
 package chatroom
 
 import (
+	"webtyp.com/time"
 	"webtyp.com/events"
 	"webtyp.com/model"
 	"webtyp.com/orm"
@@ -152,7 +153,7 @@ func (m *Module) SetGroupMembers(tenantID, roomID string, userIDs []string) erro
 	readAtMap := make([]fmtKeyValueInt, 0, len(existingMembers))
 	existingIDs := make([]string, 0, len(existingMembers))
 	for _, em := range existingMembers {
-		readAtMap = append(readAtMap, fmtKeyValueInt{Key: em.UserId, Value: em.LastReadAt})
+		readAtMap = append(readAtMap, fmtKeyValueInt{Key: em.UserId, Value: time.Nano(em.LastReadAt)})
 		existingIDs = append(existingIDs, em.UserId)
 	}
 
@@ -193,7 +194,7 @@ func (m *Module) SetGroupMembers(tenantID, roomID string, userIDs []string) erro
 		}
 
 		for _, uid := range validUsers {
-			var lastRead int64
+			var lastRead time.Nano
 			for _, kv := range readAtMap {
 				if kv.Key == uid {
 					lastRead = kv.Value
@@ -232,7 +233,7 @@ func (m *Module) SetGroupMembers(tenantID, roomID string, userIDs []string) erro
 
 type fmtKeyValueInt struct {
 	Key   string
-	Value int64
+	Value time.Nano
 }
 
 func (m *Module) ListGroupCandidates(tenantID string) ([]Participant, error) {
@@ -314,10 +315,10 @@ func (m *Module) ListGroupMembers(tenantID, roomID string) ([]Participant, error
 			label = mem.UserId
 		}
 
-		var lastSeen int64
+		var lastSeen time.Nano
 		for _, p := range presences {
 			if p.UserId == mem.UserId {
-				lastSeen = p.LastSeen
+				lastSeen = time.Nano(p.LastSeen)
 				break
 			}
 		}
@@ -392,13 +393,12 @@ func (m *Module) PurgeExpired(tenantID string) (int, error) {
 	}
 
 	now := m.nowNano()
-	retentionNanos := int64(m.retentionDays) * 24 * 3600 * 1_000_000_000
-	cutoff := now - retentionNanos
+	cutoff := now - (time.Unix(m.retentionDays) * time.Day).Nano()
 
 	var expired []Message
 	err := m.db.Query(&Message{}).
 		Where("tenant_id").Eq(tenantID).
-		Where("created_at").Lt(cutoff).
+		Where("created_at").Lt(int64(cutoff)).
 		ReadAll(func() model.Model { return &Message{} }, func(m model.Model) {
 			expired = append(expired, *m.(*Message))
 		})

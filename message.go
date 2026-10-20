@@ -1,6 +1,7 @@
 package chatroom
 
 import (
+	"webtyp.com/time"
 	"webtyp.com/events"
 	"webtyp.com/model"
 	"webtyp.com/orm"
@@ -114,7 +115,7 @@ func (m *Module) ListMessages(tenantID, userID, roomID, afterID string, limit in
 		}
 	}
 
-	var otherReadAt int64
+	var otherReadAt time.Nano
 	if room.Kind == KindDirect {
 		var otherMem Member
 		err := m.db.Query(&otherMem).
@@ -123,7 +124,7 @@ func (m *Module) ListMessages(tenantID, userID, roomID, afterID string, limit in
 			Where("user_id").Neq(userID).
 			ReadOne()
 		if err == nil {
-			otherReadAt = otherMem.LastReadAt
+			otherReadAt = time.Nano(otherMem.LastReadAt)
 		}
 	}
 
@@ -244,7 +245,7 @@ func (m *Module) SendMessage(tenantID, userID, roomID, body string) (MessageView
 		}
 	}
 
-	var otherReadAt int64
+	var otherReadAt time.Nano
 	if room.Kind == KindDirect {
 		var otherMem Member
 		err := m.db.Query(&otherMem).
@@ -253,7 +254,7 @@ func (m *Module) SendMessage(tenantID, userID, roomID, body string) (MessageView
 			Where("user_id").Neq(userID).
 			ReadOne()
 		if err == nil {
-			otherReadAt = otherMem.LastReadAt
+			otherReadAt = time.Nano(otherMem.LastReadAt)
 		}
 	}
 

@@ -5,6 +5,7 @@ package chatroom
 import (
 	"webtyp.com/model"
 	"webtyp.com/orm"
+	"webtyp.com/time"
 )
 
 type Room struct {
@@ -13,8 +14,8 @@ type Room struct {
 	Kind      string
 	Name      string
 	DirectKey string
-	CreatedAt int64
-	UpdatedAt int64
+	CreatedAt time.Nano
+	UpdatedAt time.Nano
 }
 
 func (m *Room) ModelName() string { return "chat_room" }
@@ -22,7 +23,7 @@ func (m *Room) ModelName() string { return "chat_room" }
 func (m *Room) Schema() []model.Field { return RoomModel.Fields }
 
 func (m *Room) Pointers() []any {
-	return []any{&m.Id, &m.TenantId, &m.Kind, &m.Name, &m.DirectKey, &m.CreatedAt, &m.UpdatedAt}
+	return []any{&m.Id, &m.TenantId, &m.Kind, &m.Name, &m.DirectKey, (*int64)(&m.CreatedAt), (*int64)(&m.UpdatedAt)}
 }
 
 func (m *Room) IsNil() bool { return m == nil }
@@ -39,9 +40,9 @@ func (m *Room) EncodeFields(w model.FieldWriter) {
 	if m.DirectKey != "" {
 		w.String("direct_key", m.DirectKey)
 	}
-	w.Int("created_at", m.CreatedAt)
+	w.Int("created_at", int64(m.CreatedAt))
 	if m.UpdatedAt != 0 {
-		w.Int("updated_at", m.UpdatedAt)
+		w.Int("updated_at", int64(m.UpdatedAt))
 	}
 }
 
@@ -62,10 +63,10 @@ func (m *Room) DecodeFields(r model.FieldReader) {
 		m.DirectKey = v
 	}
 	if v, ok := r.Int("created_at"); ok {
-		m.CreatedAt = v
+		m.CreatedAt = time.Nano(v)
 	}
 	if v, ok := r.Int("updated_at"); ok {
-		m.UpdatedAt = v
+		m.UpdatedAt = time.Nano(v)
 	}
 }
 
@@ -121,14 +122,16 @@ type Member struct {
 	TenantId   string
 	RoomId     string
 	UserId     string
-	LastReadAt int64
+	LastReadAt time.Nano
 }
 
 func (m *Member) ModelName() string { return "chat_member" }
 
 func (m *Member) Schema() []model.Field { return MemberModel.Fields }
 
-func (m *Member) Pointers() []any { return []any{&m.TenantId, &m.RoomId, &m.UserId, &m.LastReadAt} }
+func (m *Member) Pointers() []any {
+	return []any{&m.TenantId, &m.RoomId, &m.UserId, (*int64)(&m.LastReadAt)}
+}
 
 func (m *Member) IsNil() bool { return m == nil }
 
@@ -136,7 +139,7 @@ func (m *Member) EncodeFields(w model.FieldWriter) {
 	w.String("tenant_id", m.TenantId)
 	w.String("room_id", m.RoomId)
 	w.String("user_id", m.UserId)
-	w.Int("last_read_at", m.LastReadAt)
+	w.Int("last_read_at", int64(m.LastReadAt))
 }
 
 func (m *Member) DecodeFields(r model.FieldReader) {
@@ -150,7 +153,7 @@ func (m *Member) DecodeFields(r model.FieldReader) {
 		m.UserId = v
 	}
 	if v, ok := r.Int("last_read_at"); ok {
-		m.LastReadAt = v
+		m.LastReadAt = time.Nano(v)
 	}
 }
 
@@ -209,7 +212,7 @@ type Message struct {
 	SenderId    string
 	SenderLabel string
 	Body        string
-	CreatedAt   int64
+	CreatedAt   time.Nano
 }
 
 func (m *Message) ModelName() string { return "chat_message" }
@@ -217,7 +220,7 @@ func (m *Message) ModelName() string { return "chat_message" }
 func (m *Message) Schema() []model.Field { return MessageModel.Fields }
 
 func (m *Message) Pointers() []any {
-	return []any{&m.Id, &m.TenantId, &m.RoomId, &m.SenderId, &m.SenderLabel, &m.Body, &m.CreatedAt}
+	return []any{&m.Id, &m.TenantId, &m.RoomId, &m.SenderId, &m.SenderLabel, &m.Body, (*int64)(&m.CreatedAt)}
 }
 
 func (m *Message) IsNil() bool { return m == nil }
@@ -231,7 +234,7 @@ func (m *Message) EncodeFields(w model.FieldWriter) {
 	w.String("sender_id", m.SenderId)
 	w.String("sender_label", m.SenderLabel)
 	w.String("body", m.Body)
-	w.Int("created_at", m.CreatedAt)
+	w.Int("created_at", int64(m.CreatedAt))
 }
 
 func (m *Message) DecodeFields(r model.FieldReader) {
@@ -254,7 +257,7 @@ func (m *Message) DecodeFields(r model.FieldReader) {
 		m.Body = v
 	}
 	if v, ok := r.Int("created_at"); ok {
-		m.CreatedAt = v
+		m.CreatedAt = time.Nano(v)
 	}
 }
 
@@ -315,21 +318,21 @@ func (m *Message) SchemaExt() []model.FieldExt {
 type Presence struct {
 	TenantId string
 	UserId   string
-	LastSeen int64
+	LastSeen time.Nano
 }
 
 func (m *Presence) ModelName() string { return "chat_presence" }
 
 func (m *Presence) Schema() []model.Field { return PresenceModel.Fields }
 
-func (m *Presence) Pointers() []any { return []any{&m.TenantId, &m.UserId, &m.LastSeen} }
+func (m *Presence) Pointers() []any { return []any{&m.TenantId, &m.UserId, (*int64)(&m.LastSeen)} }
 
 func (m *Presence) IsNil() bool { return m == nil }
 
 func (m *Presence) EncodeFields(w model.FieldWriter) {
 	w.String("tenant_id", m.TenantId)
 	w.String("user_id", m.UserId)
-	w.Int("last_seen", m.LastSeen)
+	w.Int("last_seen", int64(m.LastSeen))
 }
 
 func (m *Presence) DecodeFields(r model.FieldReader) {
@@ -340,7 +343,7 @@ func (m *Presence) DecodeFields(r model.FieldReader) {
 		m.UserId = v
 	}
 	if v, ok := r.Int("last_seen"); ok {
-		m.LastSeen = v
+		m.LastSeen = time.Nano(v)
 	}
 }
 
@@ -971,7 +974,7 @@ type RoomSummary struct {
 	Kind          string
 	Title         string
 	Unread        int64
-	LastMessageAt int64
+	LastMessageAt time.Nano
 	LastPreview   string
 }
 
@@ -980,7 +983,7 @@ func (m *RoomSummary) ModelName() string { return "room_summary" }
 func (m *RoomSummary) Schema() []model.Field { return RoomSummaryModel.Fields }
 
 func (m *RoomSummary) Pointers() []any {
-	return []any{&m.RoomId, &m.Kind, &m.Title, &m.Unread, &m.LastMessageAt, &m.LastPreview}
+	return []any{&m.RoomId, &m.Kind, &m.Title, &m.Unread, (*int64)(&m.LastMessageAt), &m.LastPreview}
 }
 
 func (m *RoomSummary) IsNil() bool { return m == nil }
@@ -990,7 +993,7 @@ func (m *RoomSummary) EncodeFields(w model.FieldWriter) {
 	w.String("kind", m.Kind)
 	w.String("title", m.Title)
 	w.Int("unread", m.Unread)
-	w.Int("last_message_at", m.LastMessageAt)
+	w.Int("last_message_at", int64(m.LastMessageAt))
 	w.String("last_preview", m.LastPreview)
 }
 
@@ -1008,7 +1011,7 @@ func (m *RoomSummary) DecodeFields(r model.FieldReader) {
 		m.Unread = v
 	}
 	if v, ok := r.Int("last_message_at"); ok {
-		m.LastMessageAt = v
+		m.LastMessageAt = time.Nano(v)
 	}
 	if v, ok := r.String("last_preview"); ok {
 		m.LastPreview = v
@@ -1034,7 +1037,7 @@ type MessageView struct {
 	SenderId    string
 	SenderLabel string
 	Body        string
-	CreatedAt   int64
+	CreatedAt   time.Nano
 	Mine        bool
 	Read        bool
 }
@@ -1044,7 +1047,7 @@ func (m *MessageView) ModelName() string { return "message_view" }
 func (m *MessageView) Schema() []model.Field { return MessageViewModel.Fields }
 
 func (m *MessageView) Pointers() []any {
-	return []any{&m.Id, &m.RoomId, &m.SenderId, &m.SenderLabel, &m.Body, &m.CreatedAt, &m.Mine, &m.Read}
+	return []any{&m.Id, &m.RoomId, &m.SenderId, &m.SenderLabel, &m.Body, (*int64)(&m.CreatedAt), &m.Mine, &m.Read}
 }
 
 func (m *MessageView) IsNil() bool { return m == nil }
@@ -1055,7 +1058,7 @@ func (m *MessageView) EncodeFields(w model.FieldWriter) {
 	w.String("sender_id", m.SenderId)
 	w.String("sender_label", m.SenderLabel)
 	w.String("body", m.Body)
-	w.Int("created_at", m.CreatedAt)
+	w.Int("created_at", int64(m.CreatedAt))
 	w.Bool("mine", m.Mine)
 	w.Bool("read", m.Read)
 }
@@ -1077,7 +1080,7 @@ func (m *MessageView) DecodeFields(r model.FieldReader) {
 		m.Body = v
 	}
 	if v, ok := r.Int("created_at"); ok {
-		m.CreatedAt = v
+		m.CreatedAt = time.Nano(v)
 	}
 	if v, ok := r.Bool("mine"); ok {
 		m.Mine = v

@@ -1,6 +1,7 @@
 package tests
 
 import (
+	"webtyp.com/time"
 	"testing"
 
 	"webtyp.com/fmt"
@@ -30,8 +31,7 @@ func TestPurgeExpired(t *testing.T) {
 	}
 
 	// Message 2 at t = 3 days later
-	threeDaysNanos := int64(3) * 24 * 3600 * 1_000_000_000
-	env.clockTime += threeDaysNanos
+	env.clockTime += (3 * time.Day).Nano()
 	_, err = env.module.SendMessage("t1", "u1", room.RoomId, "New message")
 	if err != nil {
 		t.Fatalf("SendMessage new failed: %v", err)
