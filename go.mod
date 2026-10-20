@@ -10,30 +10,30 @@ require (
 	webtyp.com/model v0.2.4
 	webtyp.com/orm v0.12.8
 	webtyp.com/router v0.4.3
-	webtyp.com/time v0.5.7
+	webtyp.com/time v0.6.2
 	webtyp.com/view v0.6.27
 )
 
 require (
-	webtyp.com/components v0.8.34
+	webtyp.com/components v0.8.38
 	webtyp.com/dom v0.13.26
 	webtyp.com/html v0.0.27
-	webtyp.com/layout v0.3.52
+	webtyp.com/layout v0.3.56
 	webtyp.com/msgtype v0.1.0
 	webtyp.com/storage v0.1.8
 	webtyp.com/svg v0.3.28
-	webtyp.com/unixid v0.3.0
+	webtyp.com/unixid v0.3.1
 )
 
 require (
+	webtyp.com/calendar v0.1.0 // indirect
 	webtyp.com/color v0.1.2 // indirect
 	webtyp.com/css v0.4.30 // indirect
-	webtyp.com/date v0.0.11 // indirect
 	webtyp.com/escape v0.1.0 // indirect
 	webtyp.com/font v0.0.5 // indirect
 	webtyp.com/form v0.4.43 // indirect
 	webtyp.com/icons v0.0.7 // indirect
-	webtyp.com/json v0.5.29 // indirect
+	webtyp.com/json v0.5.30 // indirect
 	webtyp.com/lang v0.1.7 // indirect
 	webtyp.com/widget v0.6.43 // indirect
 )
