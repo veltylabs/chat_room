@@ -1,9 +1,8 @@
 ---
 PLAN: "refactor: typed instants of webtyp/time v0.6 in chat_room — every instant field is time.Unix or time.Nano, no unit arithmetic"
+TAG: ""
 EXECUTOR: jules
 REVIEWER: none
-STATUS: running
-SESSION: 10017551458955167820
 ---
 
 > Read AGENTS.md at the repo root before any change. This plan is complete: do not guess; if something does not fit, stop and ask in the PR.
@@ -19,6 +18,12 @@ data**: a field keeps the unit it already stores (the table below says which).
 - Work on the branch codejob created. Never run `git reset`, `git checkout -- <file>`, `git clean`, `git stash` or any
   command that discards files. Commit often (`git add -A && git commit -m "..."`).
 - Do not edit `model_orm.go` by hand: it is generated (Stage 2).
+- **Never pause to ask permission or to report progress.** When the delivery check passes: commit, push and open the
+  pull request. If something still fails after you tried for 30 minutes, open the pull request anyway and list in it
+  exactly what fails (command and output). Never edit `model_orm.go` by hand: the casts `(*int64)(&m.Field)` it writes
+  in `Pointers()` are required (storage reads integers through `*int64`).
+- If `gotest` cannot run its browser WASM lane (`wasmbrowsertest` missing), run `GOOS=js GOARCH=wasm go vet ./...`
+  instead and say so in the pull request; it does not block delivery.
 - Never use `goimports` on a file that needs `webtyp.com/time`: it imports the standard library `time` instead. Write
   the import by hand: `"webtyp.com/time"`.
 
@@ -139,14 +144,31 @@ ui/source.go:143: return time.FormatDate(ns)
 web/client.go:41: now := time.Now()
 ```
 
-### Known traps in this module
+### Exact rewrites in this module (a first attempt failed here: follow them literally)
 
-- `m.nowNano()` returns `time.Nano`; every `created_at`, `updated_at`, `last_read_at` and `last_message_at` is an
-  event instant, `time.Nano` (they are stored in nanoseconds today).
-- `HeartbeatIntervalSeconds` / `PresenceWindowSeconds` are durations in seconds used against nanosecond instants:
-  write them as `time.Unix` durations and compare through `.Nano()` (e.g. `now - (PresenceWindow).Nano()`), or keep
-  them `int` where they only feed `time.AfterFunc` milliseconds. Never multiply by 1e9.
-- `ui/source.go` formats a nanosecond instant: `time.FormatTime(ns.Unix())`, `time.FormatDate(ns.Unix())`.
+Every instant here is an event in **nanoseconds**: `time.Nano`. Behaviour must not change; **no test expectation changes**.
+
+| File:line today | Becomes |
+|---|---|
+| `module.go:21` `Clock func() int64 // opcional — nil = time.Now (nanosegundos)…` | `Clock func() time.Nano // opcional — nil = time.NowNano; inyectable en tests` |
+| `room.go:9-14` `func (m *Module) nowNano() int64 { … return time.Now() }` | `func (m *Module) nowNano() time.Nano { if m.clock != nil { return m.clock() }; return time.NowNano() }` |
+| `presence.go:8-14` `func isOnline(nowNano int64, lastSeenNano int64) bool { … diffSec := (nowNano - lastSeenNano) / 1_000_000_000; return diffSec < PresenceWindowSeconds }` | `func isOnline(now, lastSeen time.Nano) bool { if lastSeen <= 0 { return false }; return now-lastSeen < presenceWindow.Nano() }` — identical result: the old code was online exactly when the difference was under 90 s |
+| `model.go:24-25` `HeartbeatIntervalSeconds = 30`, `PresenceWindowSeconds = 90` | keep `HeartbeatIntervalSeconds = 30` unchanged (it feeds `time.AfterFunc(HeartbeatIntervalSeconds*1000, …)`, in milliseconds). Replace `PresenceWindowSeconds = 90` by `presenceWindow time.Unix = 90` in the same `const` block (a typed duration in seconds) and use `presenceWindow.Nano()` as in the row above. If `grep -rn PresenceWindowSeconds` finds a use outside `presence.go`, keep the old constant for that use too |
+| `group.go:395-396` `retentionNanos := int64(m.retentionDays) * 24 * 3600 * 1_000_000_000; cutoff := now - retentionNanos` | `cutoff := now - (time.Unix(m.retentionDays) * time.Day).Nano()` |
+| `tests/setup_test.go:33` `clockTime int64` | `clockTime time.Nano` |
+| `tests/setup_test.go:58` `Clock: func() int64 { return env.clockTime },` | `Clock: func() time.Nano { return env.clockTime },` |
+| `tests/retention_test.go:33-34` `threeDaysNanos := int64(3) * 24 * 3600 * 1_000_000_000; env.clockTime += threeDaysNanos` | `env.clockTime += (3 * time.Day).Nano()` |
+| `tests/ui_live_wasm_test.go:33-39` `func wasmClock() func() int64 { var last int64 = time.Now(); return func() int64 { last += 1_000_000; return last } }` | `func wasmClock() func() time.Nano { last := time.NowNano(); return func() time.Nano { last += 1_000_000; return last } }` (1 ms per call, as before; `1_000_000` is an untyped constant) |
+
+The literals `1_000_000_000_000`, `100_000_000_000`, `189_000_000_000`, `191_000_000_000` and `+= 1000` in the tests
+are untyped constants assigned to a `time.Nano`: **leave them as they are**.
+
+`TestPurgeExpired` must keep passing unchanged: with retention 2 days, a message at `t` and another at `t + 3 days`,
+`PurgeExpired` removes exactly the first. If it does not, the cutoff or the clock is wrong — compare with the table,
+never change the test.
+
+`ui/source.go`: `time.FormatTime(ns)` / `time.FormatDate(ns)` with `ns` a `time.Nano` become `time.FormatTime(ns.Unix())`
+/ `time.FormatDate(ns.Unix())`.
 
 ## Stage 4 — docs
 
