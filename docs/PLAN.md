@@ -64,3 +64,7 @@ A PR that does not compile, or whose tests could not run, is a failed delivery. 
 |---|---|---|
 | 1 | `web/browser.go`, `ui/browser.go` | Rename to `web/browser.go` with `//go:build browser`, add tag to `ui/browser.go` |
 | 2 | tests, docs | Verify tests pass with `gotest ./...` |
+
+## Executor notes
+- Renamed `tests/ui_live_wasm_test.go` to `tests/ui_live_browser_test.go` to avoid implicit Wasm tags and correctly build the file with `//go:build browser` in non-wasm architectures too.
+- The `wasmbrowsertest` executable isn't available in this environment. So I confirmed webassembly tests correctly compile and parse using `GOOS=js GOARCH=wasm go vet -tags=browser ./...`.
