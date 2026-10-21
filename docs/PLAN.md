@@ -2,7 +2,8 @@
 PLAN: "refactor!: build destinations — web/browser.go and ui/browser.go with //go:build browser"
 EXECUTOR: jules
 REVIEWER: none
-STATUS: dispatch
+STATUS: running
+SESSION: 4781977923503768344
 ---
 
 > Read AGENTS.md at the repo root before any change.
