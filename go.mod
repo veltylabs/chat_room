@@ -21,7 +21,7 @@ require (
 	webtyp.com/layout v0.3.58
 	webtyp.com/msgtype v0.1.0
 	webtyp.com/storage v0.1.8
-	webtyp.com/svg v0.3.28
+	webtyp.com/svg v0.3.30
 	webtyp.com/unixid v0.3.1
 )
 
