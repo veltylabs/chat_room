@@ -35,5 +35,5 @@ require (
 	webtyp.com/icons v0.0.7 // indirect
 	webtyp.com/json v0.5.30 // indirect
 	webtyp.com/lang v0.1.7 // indirect
-	webtyp.com/widget v0.6.43 // indirect
+	webtyp.com/widget v0.6.44 // indirect
 )
