@@ -2,8 +2,10 @@
 PLAN: "refactor!: build destinations — web/browser.go and ui/browser.go with //go:build browser"
 EXECUTOR: jules
 REVIEWER: none
-STATUS: running
+STATUS: review
 SESSION: 4781977923503768344
+PR: https://github.com/veltylabs/chat_room/pull/6
+REVIEWED_COMMIT: 73208ab427ffa711d26b16ac2112a6329efb816d
 ---
 
 > Read AGENTS.md at the repo root before any change.
