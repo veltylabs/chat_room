@@ -28,7 +28,7 @@ require (
 	webtyp.com/calendar v0.1.0 // indirect
 	webtyp.com/color v0.1.2 // indirect
 	webtyp.com/css v0.4.30 // indirect
-	webtyp.com/erd v0.0.2 // indirect
+	webtyp.com/erd v0.0.4 // indirect
 	webtyp.com/escape v0.1.0 // indirect
 	webtyp.com/fetch v0.1.29 // indirect
 	webtyp.com/filepath v0.1.0 // indirect
