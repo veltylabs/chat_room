@@ -26,6 +26,7 @@ func Screens(caller router.Caller, ids model.IDGenerator, tenantID string, opts 
 			Label:      DefaultLabel,
 			Icon:       string(Icon(ID)),
 			Component:  chatComp,
+			Permission: chatroom.ResourceGroup,
 			Help:       "Chat interno",
 		},
 		{

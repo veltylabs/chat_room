@@ -124,6 +124,10 @@ func (s *screen) Render() *dom.Element {
 		Child(s.m.view)
 }
 
+func (s *screen) Badge() *countbadge.CountBadge {
+	return s.m.Badge()
+}
+
 func (s *screen) Init(ctx dom.Ctx) {
 	s.tick()
 	if ctx != nil {
