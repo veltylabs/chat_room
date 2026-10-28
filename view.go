@@ -6,12 +6,6 @@ import (
 	"webtyp.com/view"
 )
 
-func (r *Room) Item() view.Item {
-	return view.Item{
-		ID:    r.Id,
-		Label: r.Name,
-	}
-}
 
 func NewGroupView(caller router.Caller) view.Presenter {
 	ops := view.Ops{

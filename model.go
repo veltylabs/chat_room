@@ -33,7 +33,7 @@ var RoomModel = model.Definition{
 		{Name: "id", Type: model.Text(), DB: &model.FieldDB{PK: true}, OmitEmpty: true},
 		{Name: "tenant_id", Type: model.Text(), NotNull: true},
 		{Name: "kind", Type: model.Text(), NotNull: true},
-		{Name: "name", Type: input.Text(), OmitEmpty: true, Permitted: model.Permitted{Maximum: 60}}, // solo group y broadcast; lo edita el admin en el formulario de grupos
+		{Name: "name", Type: input.Text(), Item: model.ItemLabel, OmitEmpty: true, Permitted: model.Permitted{Maximum: 60}}, // solo group y broadcast; lo edita el admin en el formulario de grupos
 		{Name: "direct_key", Type: model.Text(), OmitEmpty: true},                                    // solo direct: "<idMenor>|<idMayor>"
 		{Name: "created_at", Type: model.NanoTime(), NotNull: true},
 		{Name: "updated_at", Type: model.NanoTime(), OmitEmpty: true},
