@@ -77,9 +77,6 @@ mod.MountOperations(routerRegistry)
 ```go
 caller := loopback.ActingAs(tenantID, currentUserID, mod)
 
-// Módulo de la pantalla de chat con notificaciones push
-chatModule, err := ui.Browser(caller, ids, tenantID, ui.WithInbox(subscriber, currentUserID))
-
-// Módulo de administración de grupos
-groupsMod, err := ui.GroupsBrowser(caller, ids, tenantID)
+// Menú y pantallas
+screens := ui.Screens(caller, ids, tenantID, ui.WithInbox(subscriber, currentUserID))
 ```

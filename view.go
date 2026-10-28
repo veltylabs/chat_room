@@ -6,12 +6,6 @@ import (
 	"webtyp.com/view"
 )
 
-func (r *Room) Item() view.Item {
-	return view.Item{
-		ID:    r.Id,
-		Label: r.Name,
-	}
-}
 
 func NewGroupView(caller router.Caller) view.Presenter {
 	ops := view.Ops{
@@ -20,7 +14,7 @@ func NewGroupView(caller router.Caller) view.Presenter {
 		Save:   OpSaveGroup,
 		Delete: OpDeleteGroup,
 	}
-	lister := view.NewCallerLister(caller, ops, func() model.ModelSlice {
+	lister := view.NewCallerLister(view.NewRecords().Caller(caller), ops, func() model.ModelSlice {
 		return &RoomList{}
 	})
 	return view.New(lister, &Room{})

@@ -9,7 +9,9 @@ import (
 	"webtyp.com/dom"
 	"webtyp.com/events/mock"
 	"webtyp.com/fmt"
+	"webtyp.com/layout/app"
 	"webtyp.com/layout/platformd"
+	"webtyp.com/model"
 	"webtyp.com/orm"
 	"webtyp.com/router/loopback"
 	"webtyp.com/storage/mem"
@@ -76,7 +78,9 @@ func main() {
 
 	caller := loopback.ActingAs(demoTenantID, "u1", mod)
 
-	chatMod, err := ui.Browser(caller, ids, demoTenantID, ui.WithInbox(broker, "u1"))
+	screens := ui.Screens(caller, ids, demoTenantID, ui.WithInbox(broker, "u1"))
+
+	menu, err := app.BuildMenu(screens, ids, func(model.Resource) bool { return true })
 	if err != nil {
 		panic(err)
 	}
@@ -84,7 +88,8 @@ func main() {
 	p := &platformd.Platform{
 		AppName: ui.DefaultLabel + " — demo",
 		User:    demoUser{},
-		Modules:   []platformd.UIModule{chatMod},
+		Modules: menu.Modules,
+		CanView: menu.CanView,
 		DefaultID: ui.ID,
 	}
 

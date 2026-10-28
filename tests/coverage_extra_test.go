@@ -1,6 +1,7 @@
 package tests
 
 import (
+	"webtyp.com/view"
 	"testing"
 
 	chatroom "github.com/veltylabs/chat_room"
@@ -143,7 +144,7 @@ func TestAllOpsAndViews(t *testing.T) {
 		t.Fatalf("Item() failed")
 	}
 
-	p := chatroom.NewGroupView(&mockCaller{})
+	p := chatroom.NewGroupView(view.NewRecords().Caller(&mockCaller{}))
 	if p == nil {
 		t.Fatalf("NewGroupView returned nil")
 	}

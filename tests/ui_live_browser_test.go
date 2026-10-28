@@ -13,7 +13,9 @@ import (
 	"webtyp.com/dom"
 	"webtyp.com/events/mock"
 	"webtyp.com/fmt"
+	"webtyp.com/layout/app"
 	"webtyp.com/layout/platformd"
+	"webtyp.com/model"
 	"webtyp.com/orm"
 	"webtyp.com/router/loopback"
 	"webtyp.com/storage/mem"
@@ -63,9 +65,27 @@ func TestChatScreenLiveWasm(t *testing.T) {
 
 	caller := loopback.ActingAs(tenant, "u1", mod)
 
-	chatMod, err := ui.Browser(caller, ids, tenant, ui.WithInbox(broker, "u1"))
+	screens := ui.Screens(caller, ids, tenant, ui.WithInbox(broker, "u1"))
+	menu, err := app.BuildMenu(screens, ids, func(model.Resource) bool { return true })
 	if err != nil {
-		t.Fatalf("ui.Browser failed: %v", err)
+		t.Fatalf("app.BuildMenu failed: %v", err)
+	}
+
+	// Find Chat and Group modules from menu
+	var chatMod, groupsMod platformd.UIModule
+	for _, m := range menu.Modules {
+		if m.ModelName() == ui.ID {
+			chatMod = m
+		} else if m.ModelName() == ui.GroupsID {
+			groupsMod = m
+		}
+	}
+
+	if chatMod == nil {
+		t.Fatalf("expected chat module in menu")
+	}
+	if groupsMod == nil {
+		t.Fatalf("expected groups module in menu")
 	}
 
 	doc := js.Global().Get("document")
@@ -75,6 +95,9 @@ func TestChatScreenLiveWasm(t *testing.T) {
 	if err := dom.Render("chat-live-root", chatMod.View()); err != nil {
 		t.Fatalf("dom.Render: %v", err)
 	}
+
+	// Must trigger view load (simulating router load since we are testing components manually here without a full router frame)
+	chatMod.Activate()
 
 	// 0. The inbox lists u1's three rooms: General, Recepción, the direct room with Bruno.
 	rowSel := "." + string(inboxlist.NameInboxList.Class(inboxlist.PartRow))
@@ -121,13 +144,6 @@ func TestChatScreenLiveWasm(t *testing.T) {
 	}
 
 	// 4. Groups screen
-	groupsMod, err := ui.GroupsBrowser(caller, ids, tenant)
-	if err != nil {
-		t.Fatalf("ui.GroupsBrowser failed: %v", err)
-	}
-	if groupsMod.ModelName() != ui.GroupsID {
-		t.Fatalf("expected ModelName %q, got %q", ui.GroupsID, groupsMod.ModelName())
-	}
 	gMod, ok := groupsMod.(platformd.GroupModule)
 	if !ok {
 		t.Fatalf("expected groupsMod to implement platformd.GroupModule")
@@ -142,6 +158,10 @@ func TestChatScreenLiveWasm(t *testing.T) {
 	if children[1].ModelName() != "chat_room.groups.members" {
 		t.Fatalf("expected second child ModelName chat_room.groups.members, got %q", children[1].ModelName())
 	}
+
+	// Call activate on members to fetch groups properly
+	children[1].Activate()
+
 	groot := doc.Call("createElement", "div")
 	groot.Set("id", "chat-groups-root")
 	doc.Get("body").Call("appendChild", groot)

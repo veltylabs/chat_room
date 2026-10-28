@@ -8,9 +8,6 @@ import (
 	"webtyp.com/dom"
 	"webtyp.com/events"
 	"webtyp.com/layout/chatview"
-	"webtyp.com/layout/platformd"
-	"webtyp.com/model"
-	"webtyp.com/msgtype"
 	"webtyp.com/router"
 	"webtyp.com/svg"
 	"webtyp.com/time"
@@ -37,7 +34,7 @@ func WithInbox(sub events.Subscriber, userID string) Option {
 	}
 }
 
-func Browser(caller router.Caller, ids model.IDGenerator, tenantID string, opts ...Option) (platformd.UIModule, error) {
+func NewChatComponent(caller router.Caller, tenantID string, opts ...Option) (dom.Component, error) {
 	o := &options{
 		label: DefaultLabel,
 	}
@@ -63,12 +60,6 @@ func Browser(caller router.Caller, ids model.IDGenerator, tenantID string, opts 
 		badge: badge,
 	}
 
-	v.OnError = func(err error) {
-		if m.notifier != nil {
-			m.notifier.Notify(msgtype.Error, err.Error(), platformd.Auto())
-		}
-	}
-
 	m.screen = &screen{
 		m: m,
 	}
@@ -79,7 +70,7 @@ func Browser(caller router.Caller, ids model.IDGenerator, tenantID string, opts 
 		})
 	}
 
-	return m, nil
+	return m.screen, nil
 }
 
 type chatModule struct {
@@ -87,7 +78,6 @@ type chatModule struct {
 	view       *chatview.ChatView
 	screen     *screen
 	badge      *countbadge.CountBadge
-	notifier   platformd.Notifier
 	lastUnread string
 }
 
@@ -97,11 +87,6 @@ func (m *chatModule) Icon() svg.Icon                   { return Icon(m.id) }
 func (m *chatModule) View() dom.Component              { return m.screen }
 func (m *chatModule) Activate()                        { m.onPush() }
 func (m *chatModule) Badge() *countbadge.CountBadge    { return m.badge }
-func (m *chatModule) UseNotifier(n platformd.Notifier) { m.notifier = n }
-
-var _ platformd.UIModule = (*chatModule)(nil)
-var _ platformd.Badged = (*chatModule)(nil)
-var _ platformd.UsesNotifier = (*chatModule)(nil)
 
 func (m *chatModule) onPush() {
 	m.view.Refresh()
@@ -113,9 +98,6 @@ func (m *chatModule) checkUnread() {
 		return
 	}
 	now := m.badge.Count.Get()
-	if atoi(now) > atoi(m.lastUnread) && m.notifier != nil {
-		m.notifier.Notify(msgtype.Info, "Nuevo mensaje en el chat", platformd.Auto())
-	}
 	m.lastUnread = now
 }
 
@@ -140,6 +122,10 @@ func (s *screen) Render() *dom.Element {
 		Attr("data-chat-screen", "").
 		Attr("style", "height:100%;min-height:0;display:flex;flex-direction:column;overflow:hidden;").
 		Child(s.m.view)
+}
+
+func (s *screen) Badge() *countbadge.CountBadge {
+	return s.m.Badge()
 }
 
 func (s *screen) Init(ctx dom.Ctx) {

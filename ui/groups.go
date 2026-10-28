@@ -4,34 +4,12 @@ import (
 	chatroom "github.com/veltylabs/chat_room"
 	"webtyp.com/dom"
 	"webtyp.com/html"
-	"webtyp.com/layout/crudview"
-	"webtyp.com/layout/platformd"
-	"webtyp.com/model"
 	"webtyp.com/router"
 )
 
 // textNoGroupsYet is shown by the Miembros section while no group exists.
 const textNoGroupsYet = "Cree un grupo en la sección Grupos."
 
-func GroupsBrowser(caller router.Caller, ids model.IDGenerator, tenantID string) (platformd.UIModule, error) {
-	crudView, err := crudview.New(crudview.Config{
-		ParentID:  GroupsID + ".list",
-		Presenter: chatroom.NewGroupView(caller),
-		IDs:       ids,
-	})
-	if err != nil {
-		return nil, err
-	}
-
-	mTab := newMembersTab(caller, tenantID)
-
-	groupsMod := platformd.NewUIModule(GroupsID+".list", "Grupos", Icon(GroupsID), crudView)
-	membersMod := platformd.NewUIModule(GroupsID+".members", "Miembros", Icon(GroupsID), mTab)
-
-	return platformd.NewGroupUIModule(GroupsID, GroupsLabel, Icon(GroupsID), []platformd.UIModule{
-		groupsMod, membersMod,
-	}), nil
-}
 
 type membersTab struct {
 	dom.Element
