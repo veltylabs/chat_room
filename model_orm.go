@@ -9,10 +9,10 @@ import (
 )
 
 type Room struct {
-	Id        string
-	TenantId  string
-	Kind      string
-	Name      string
+	Id string
+	TenantId string
+	Kind string
+	Name string
 	DirectKey string
 	CreatedAt time.Nano
 	UpdatedAt time.Nano
@@ -22,60 +22,36 @@ func (m *Room) ModelName() string { return "chat_room" }
 
 func (m *Room) Schema() []model.Field { return RoomModel.Fields }
 
-func (m *Room) Pointers() []any {
-	return []any{&m.Id, &m.TenantId, &m.Kind, &m.Name, &m.DirectKey, (*int64)(&m.CreatedAt), (*int64)(&m.UpdatedAt)}
-}
+func (m *Room) Pointers() []any { return []any{&m.Id, &m.TenantId, &m.Kind, &m.Name, &m.DirectKey, (*int64)(&m.CreatedAt), (*int64)(&m.UpdatedAt)} }
 
 func (m *Room) IsNil() bool { return m == nil }
 
 func (m *Room) EncodeFields(w model.FieldWriter) {
-	if m.Id != "" {
-		w.String("id", m.Id)
-	}
+	if m.Id != "" { w.String("id", m.Id) }
 	w.String("tenant_id", m.TenantId)
 	w.String("kind", m.Kind)
-	if m.Name != "" {
-		w.String("name", m.Name)
-	}
-	if m.DirectKey != "" {
-		w.String("direct_key", m.DirectKey)
-	}
+	if m.Name != "" { w.String("name", m.Name) }
+	if m.DirectKey != "" { w.String("direct_key", m.DirectKey) }
 	w.Int("created_at", int64(m.CreatedAt))
-	if m.UpdatedAt != 0 {
-		w.Int("updated_at", int64(m.UpdatedAt))
-	}
+	if m.UpdatedAt != 0 { w.Int("updated_at", int64(m.UpdatedAt)) }
 }
 
 func (m *Room) DecodeFields(r model.FieldReader) {
-	if v, ok := r.String("id"); ok {
-		m.Id = v
-	}
-	if v, ok := r.String("tenant_id"); ok {
-		m.TenantId = v
-	}
-	if v, ok := r.String("kind"); ok {
-		m.Kind = v
-	}
-	if v, ok := r.String("name"); ok {
-		m.Name = v
-	}
-	if v, ok := r.String("direct_key"); ok {
-		m.DirectKey = v
-	}
-	if v, ok := r.Int("created_at"); ok {
-		m.CreatedAt = time.Nano(v)
-	}
-	if v, ok := r.Int("updated_at"); ok {
-		m.UpdatedAt = time.Nano(v)
-	}
+	if v, ok := r.String("id"); ok { m.Id = v }
+	if v, ok := r.String("tenant_id"); ok { m.TenantId = v }
+	if v, ok := r.String("kind"); ok { m.Kind = v }
+	if v, ok := r.String("name"); ok { m.Name = v }
+	if v, ok := r.String("direct_key"); ok { m.DirectKey = v }
+	if v, ok := r.Int("created_at"); ok { m.CreatedAt = time.Nano(v) }
+	if v, ok := r.Int("updated_at"); ok { m.UpdatedAt = time.Nano(v) }
 }
 
 type RoomList []*Room
 
-func (s *RoomList) Len() int                         { return len(*s) }
-func (s *RoomList) At(i int) model.Fielder           { return (*s)[i] }
-func (s *RoomList) Append() model.Fielder            { v := &Room{}; *s = append(*s, v); return v }
-func (s *RoomList) IsNil() bool                      { return s == nil }
+func (s *RoomList) Len() int             { return len(*s) }
+func (s *RoomList) At(i int) model.Fielder { return (*s)[i] }
+func (s *RoomList) Append() model.Fielder  { v := &Room{}; *s = append(*s, v); return v }
+func (s *RoomList) IsNil() bool          { return s == nil }
 func (s *RoomList) EncodeFields(_ model.FieldWriter) {}
 func (s *RoomList) DecodeFields(_ model.FieldReader) {}
 
@@ -88,18 +64,18 @@ func (m *Room) Item() model.Item {
 }
 
 var Room_ = struct {
-	Id        string
-	TenantId  string
-	Kind      string
-	Name      string
+	Id string
+	TenantId string
+	Kind string
+	Name string
 	DirectKey string
 	CreatedAt string
 	UpdatedAt string
 }{
-	Id:        "id",
-	TenantId:  "tenant_id",
-	Kind:      "kind",
-	Name:      "name",
+	Id: "id",
+	TenantId: "tenant_id",
+	Kind: "kind",
+	Name: "name",
 	DirectKey: "direct_key",
 	CreatedAt: "created_at",
 	UpdatedAt: "updated_at",
@@ -123,9 +99,9 @@ func ReadAllRoom(qb *orm.QB) (RoomList, error) {
 }
 
 type Member struct {
-	TenantId   string
-	RoomId     string
-	UserId     string
+	TenantId string
+	RoomId string
+	UserId string
 	LastReadAt time.Nano
 }
 
@@ -133,9 +109,7 @@ func (m *Member) ModelName() string { return "chat_member" }
 
 func (m *Member) Schema() []model.Field { return MemberModel.Fields }
 
-func (m *Member) Pointers() []any {
-	return []any{&m.TenantId, &m.RoomId, &m.UserId, (*int64)(&m.LastReadAt)}
-}
+func (m *Member) Pointers() []any { return []any{&m.TenantId, &m.RoomId, &m.UserId, (*int64)(&m.LastReadAt)} }
 
 func (m *Member) IsNil() bool { return m == nil }
 
@@ -147,26 +121,18 @@ func (m *Member) EncodeFields(w model.FieldWriter) {
 }
 
 func (m *Member) DecodeFields(r model.FieldReader) {
-	if v, ok := r.String("tenant_id"); ok {
-		m.TenantId = v
-	}
-	if v, ok := r.String("room_id"); ok {
-		m.RoomId = v
-	}
-	if v, ok := r.String("user_id"); ok {
-		m.UserId = v
-	}
-	if v, ok := r.Int("last_read_at"); ok {
-		m.LastReadAt = time.Nano(v)
-	}
+	if v, ok := r.String("tenant_id"); ok { m.TenantId = v }
+	if v, ok := r.String("room_id"); ok { m.RoomId = v }
+	if v, ok := r.String("user_id"); ok { m.UserId = v }
+	if v, ok := r.Int("last_read_at"); ok { m.LastReadAt = time.Nano(v) }
 }
 
 type MemberList []*Member
 
-func (s *MemberList) Len() int                         { return len(*s) }
-func (s *MemberList) At(i int) model.Fielder           { return (*s)[i] }
-func (s *MemberList) Append() model.Fielder            { v := &Member{}; *s = append(*s, v); return v }
-func (s *MemberList) IsNil() bool                      { return s == nil }
+func (s *MemberList) Len() int             { return len(*s) }
+func (s *MemberList) At(i int) model.Fielder { return (*s)[i] }
+func (s *MemberList) Append() model.Fielder  { v := &Member{}; *s = append(*s, v); return v }
+func (s *MemberList) IsNil() bool          { return s == nil }
 func (s *MemberList) EncodeFields(_ model.FieldWriter) {}
 func (s *MemberList) DecodeFields(_ model.FieldReader) {}
 
@@ -175,14 +141,14 @@ func (m *Member) Validate(action byte) error {
 }
 
 var Member_ = struct {
-	TenantId   string
-	RoomId     string
-	UserId     string
+	TenantId string
+	RoomId string
+	UserId string
 	LastReadAt string
 }{
-	TenantId:   "tenant_id",
-	RoomId:     "room_id",
-	UserId:     "user_id",
+	TenantId: "tenant_id",
+	RoomId: "room_id",
+	UserId: "user_id",
 	LastReadAt: "last_read_at",
 }
 
@@ -210,29 +176,25 @@ func (m *Member) SchemaExt() []model.FieldExt {
 }
 
 type Message struct {
-	Id          string
-	TenantId    string
-	RoomId      string
-	SenderId    string
+	Id string
+	TenantId string
+	RoomId string
+	SenderId string
 	SenderLabel string
-	Body        string
-	CreatedAt   time.Nano
+	Body string
+	CreatedAt time.Nano
 }
 
 func (m *Message) ModelName() string { return "chat_message" }
 
 func (m *Message) Schema() []model.Field { return MessageModel.Fields }
 
-func (m *Message) Pointers() []any {
-	return []any{&m.Id, &m.TenantId, &m.RoomId, &m.SenderId, &m.SenderLabel, &m.Body, (*int64)(&m.CreatedAt)}
-}
+func (m *Message) Pointers() []any { return []any{&m.Id, &m.TenantId, &m.RoomId, &m.SenderId, &m.SenderLabel, &m.Body, (*int64)(&m.CreatedAt)} }
 
 func (m *Message) IsNil() bool { return m == nil }
 
 func (m *Message) EncodeFields(w model.FieldWriter) {
-	if m.Id != "" {
-		w.String("id", m.Id)
-	}
+	if m.Id != "" { w.String("id", m.Id) }
 	w.String("tenant_id", m.TenantId)
 	w.String("room_id", m.RoomId)
 	w.String("sender_id", m.SenderId)
@@ -242,35 +204,21 @@ func (m *Message) EncodeFields(w model.FieldWriter) {
 }
 
 func (m *Message) DecodeFields(r model.FieldReader) {
-	if v, ok := r.String("id"); ok {
-		m.Id = v
-	}
-	if v, ok := r.String("tenant_id"); ok {
-		m.TenantId = v
-	}
-	if v, ok := r.String("room_id"); ok {
-		m.RoomId = v
-	}
-	if v, ok := r.String("sender_id"); ok {
-		m.SenderId = v
-	}
-	if v, ok := r.String("sender_label"); ok {
-		m.SenderLabel = v
-	}
-	if v, ok := r.String("body"); ok {
-		m.Body = v
-	}
-	if v, ok := r.Int("created_at"); ok {
-		m.CreatedAt = time.Nano(v)
-	}
+	if v, ok := r.String("id"); ok { m.Id = v }
+	if v, ok := r.String("tenant_id"); ok { m.TenantId = v }
+	if v, ok := r.String("room_id"); ok { m.RoomId = v }
+	if v, ok := r.String("sender_id"); ok { m.SenderId = v }
+	if v, ok := r.String("sender_label"); ok { m.SenderLabel = v }
+	if v, ok := r.String("body"); ok { m.Body = v }
+	if v, ok := r.Int("created_at"); ok { m.CreatedAt = time.Nano(v) }
 }
 
 type MessageList []*Message
 
-func (s *MessageList) Len() int                         { return len(*s) }
-func (s *MessageList) At(i int) model.Fielder           { return (*s)[i] }
-func (s *MessageList) Append() model.Fielder            { v := &Message{}; *s = append(*s, v); return v }
-func (s *MessageList) IsNil() bool                      { return s == nil }
+func (s *MessageList) Len() int             { return len(*s) }
+func (s *MessageList) At(i int) model.Fielder { return (*s)[i] }
+func (s *MessageList) Append() model.Fielder  { v := &Message{}; *s = append(*s, v); return v }
+func (s *MessageList) IsNil() bool          { return s == nil }
 func (s *MessageList) EncodeFields(_ model.FieldWriter) {}
 func (s *MessageList) DecodeFields(_ model.FieldReader) {}
 
@@ -279,21 +227,21 @@ func (m *Message) Validate(action byte) error {
 }
 
 var Message_ = struct {
-	Id          string
-	TenantId    string
-	RoomId      string
-	SenderId    string
+	Id string
+	TenantId string
+	RoomId string
+	SenderId string
 	SenderLabel string
-	Body        string
-	CreatedAt   string
+	Body string
+	CreatedAt string
 }{
-	Id:          "id",
-	TenantId:    "tenant_id",
-	RoomId:      "room_id",
-	SenderId:    "sender_id",
+	Id: "id",
+	TenantId: "tenant_id",
+	RoomId: "room_id",
+	SenderId: "sender_id",
 	SenderLabel: "sender_label",
-	Body:        "body",
-	CreatedAt:   "created_at",
+	Body: "body",
+	CreatedAt: "created_at",
 }
 
 func ReadOneMessage(qb *orm.QB, model *Message) (*Message, error) {
@@ -321,7 +269,7 @@ func (m *Message) SchemaExt() []model.FieldExt {
 
 type Presence struct {
 	TenantId string
-	UserId   string
+	UserId string
 	LastSeen time.Nano
 }
 
@@ -340,23 +288,17 @@ func (m *Presence) EncodeFields(w model.FieldWriter) {
 }
 
 func (m *Presence) DecodeFields(r model.FieldReader) {
-	if v, ok := r.String("tenant_id"); ok {
-		m.TenantId = v
-	}
-	if v, ok := r.String("user_id"); ok {
-		m.UserId = v
-	}
-	if v, ok := r.Int("last_seen"); ok {
-		m.LastSeen = time.Nano(v)
-	}
+	if v, ok := r.String("tenant_id"); ok { m.TenantId = v }
+	if v, ok := r.String("user_id"); ok { m.UserId = v }
+	if v, ok := r.Int("last_seen"); ok { m.LastSeen = time.Nano(v) }
 }
 
 type PresenceList []*Presence
 
-func (s *PresenceList) Len() int                         { return len(*s) }
-func (s *PresenceList) At(i int) model.Fielder           { return (*s)[i] }
-func (s *PresenceList) Append() model.Fielder            { v := &Presence{}; *s = append(*s, v); return v }
-func (s *PresenceList) IsNil() bool                      { return s == nil }
+func (s *PresenceList) Len() int             { return len(*s) }
+func (s *PresenceList) At(i int) model.Fielder { return (*s)[i] }
+func (s *PresenceList) Append() model.Fielder  { v := &Presence{}; *s = append(*s, v); return v }
+func (s *PresenceList) IsNil() bool          { return s == nil }
 func (s *PresenceList) EncodeFields(_ model.FieldWriter) {}
 func (s *PresenceList) DecodeFields(_ model.FieldReader) {}
 
@@ -366,11 +308,11 @@ func (m *Presence) Validate(action byte) error {
 
 var Presence_ = struct {
 	TenantId string
-	UserId   string
+	UserId string
 	LastSeen string
 }{
 	TenantId: "tenant_id",
-	UserId:   "user_id",
+	UserId: "user_id",
 	LastSeen: "last_seen",
 }
 
@@ -408,17 +350,15 @@ func (m *IdRef) EncodeFields(w model.FieldWriter) {
 }
 
 func (m *IdRef) DecodeFields(r model.FieldReader) {
-	if v, ok := r.String("id"); ok {
-		m.Id = v
-	}
+	if v, ok := r.String("id"); ok { m.Id = v }
 }
 
 type IdRefList []*IdRef
 
-func (s *IdRefList) Len() int                         { return len(*s) }
-func (s *IdRefList) At(i int) model.Fielder           { return (*s)[i] }
-func (s *IdRefList) Append() model.Fielder            { v := &IdRef{}; *s = append(*s, v); return v }
-func (s *IdRefList) IsNil() bool                      { return s == nil }
+func (s *IdRefList) Len() int             { return len(*s) }
+func (s *IdRefList) At(i int) model.Fielder { return (*s)[i] }
+func (s *IdRefList) Append() model.Fielder  { v := &IdRef{}; *s = append(*s, v); return v }
+func (s *IdRefList) IsNil() bool          { return s == nil }
 func (s *IdRefList) EncodeFields(_ model.FieldWriter) {}
 func (s *IdRefList) DecodeFields(_ model.FieldReader) {}
 
@@ -427,7 +367,7 @@ func (m *IdRef) Validate(action byte) error {
 }
 
 type OpenDirectArgs struct {
-	TenantId    string
+	TenantId string
 	OtherUserId string
 }
 
@@ -445,24 +385,16 @@ func (m *OpenDirectArgs) EncodeFields(w model.FieldWriter) {
 }
 
 func (m *OpenDirectArgs) DecodeFields(r model.FieldReader) {
-	if v, ok := r.String("tenant_id"); ok {
-		m.TenantId = v
-	}
-	if v, ok := r.String("other_user_id"); ok {
-		m.OtherUserId = v
-	}
+	if v, ok := r.String("tenant_id"); ok { m.TenantId = v }
+	if v, ok := r.String("other_user_id"); ok { m.OtherUserId = v }
 }
 
 type OpenDirectArgsList []*OpenDirectArgs
 
-func (s *OpenDirectArgsList) Len() int               { return len(*s) }
+func (s *OpenDirectArgsList) Len() int             { return len(*s) }
 func (s *OpenDirectArgsList) At(i int) model.Fielder { return (*s)[i] }
-func (s *OpenDirectArgsList) Append() model.Fielder {
-	v := &OpenDirectArgs{}
-	*s = append(*s, v)
-	return v
-}
-func (s *OpenDirectArgsList) IsNil() bool                      { return s == nil }
+func (s *OpenDirectArgsList) Append() model.Fielder  { v := &OpenDirectArgs{}; *s = append(*s, v); return v }
+func (s *OpenDirectArgsList) IsNil() bool          { return s == nil }
 func (s *OpenDirectArgsList) EncodeFields(_ model.FieldWriter) {}
 func (s *OpenDirectArgsList) DecodeFields(_ model.FieldReader) {}
 
@@ -487,21 +419,15 @@ func (m *ListRoomsArgs) EncodeFields(w model.FieldWriter) {
 }
 
 func (m *ListRoomsArgs) DecodeFields(r model.FieldReader) {
-	if v, ok := r.String("tenant_id"); ok {
-		m.TenantId = v
-	}
+	if v, ok := r.String("tenant_id"); ok { m.TenantId = v }
 }
 
 type ListRoomsArgsList []*ListRoomsArgs
 
-func (s *ListRoomsArgsList) Len() int               { return len(*s) }
+func (s *ListRoomsArgsList) Len() int             { return len(*s) }
 func (s *ListRoomsArgsList) At(i int) model.Fielder { return (*s)[i] }
-func (s *ListRoomsArgsList) Append() model.Fielder {
-	v := &ListRoomsArgs{}
-	*s = append(*s, v)
-	return v
-}
-func (s *ListRoomsArgsList) IsNil() bool                      { return s == nil }
+func (s *ListRoomsArgsList) Append() model.Fielder  { v := &ListRoomsArgs{}; *s = append(*s, v); return v }
+func (s *ListRoomsArgsList) IsNil() bool          { return s == nil }
 func (s *ListRoomsArgsList) EncodeFields(_ model.FieldWriter) {}
 func (s *ListRoomsArgsList) DecodeFields(_ model.FieldReader) {}
 
@@ -511,18 +437,16 @@ func (m *ListRoomsArgs) Validate(action byte) error {
 
 type ListMessagesArgs struct {
 	TenantId string
-	RoomId   string
-	AfterId  string
-	Limit    int64
+	RoomId string
+	AfterId string
+	Limit int64
 }
 
 func (m *ListMessagesArgs) ModelName() string { return "list_messages_args" }
 
 func (m *ListMessagesArgs) Schema() []model.Field { return ListMessagesArgsModel.Fields }
 
-func (m *ListMessagesArgs) Pointers() []any {
-	return []any{&m.TenantId, &m.RoomId, &m.AfterId, &m.Limit}
-}
+func (m *ListMessagesArgs) Pointers() []any { return []any{&m.TenantId, &m.RoomId, &m.AfterId, &m.Limit} }
 
 func (m *ListMessagesArgs) IsNil() bool { return m == nil }
 
@@ -534,30 +458,18 @@ func (m *ListMessagesArgs) EncodeFields(w model.FieldWriter) {
 }
 
 func (m *ListMessagesArgs) DecodeFields(r model.FieldReader) {
-	if v, ok := r.String("tenant_id"); ok {
-		m.TenantId = v
-	}
-	if v, ok := r.String("room_id"); ok {
-		m.RoomId = v
-	}
-	if v, ok := r.String("after_id"); ok {
-		m.AfterId = v
-	}
-	if v, ok := r.Int("limit"); ok {
-		m.Limit = v
-	}
+	if v, ok := r.String("tenant_id"); ok { m.TenantId = v }
+	if v, ok := r.String("room_id"); ok { m.RoomId = v }
+	if v, ok := r.String("after_id"); ok { m.AfterId = v }
+	if v, ok := r.Int("limit"); ok { m.Limit = v }
 }
 
 type ListMessagesArgsList []*ListMessagesArgs
 
-func (s *ListMessagesArgsList) Len() int               { return len(*s) }
+func (s *ListMessagesArgsList) Len() int             { return len(*s) }
 func (s *ListMessagesArgsList) At(i int) model.Fielder { return (*s)[i] }
-func (s *ListMessagesArgsList) Append() model.Fielder {
-	v := &ListMessagesArgs{}
-	*s = append(*s, v)
-	return v
-}
-func (s *ListMessagesArgsList) IsNil() bool                      { return s == nil }
+func (s *ListMessagesArgsList) Append() model.Fielder  { v := &ListMessagesArgs{}; *s = append(*s, v); return v }
+func (s *ListMessagesArgsList) IsNil() bool          { return s == nil }
 func (s *ListMessagesArgsList) EncodeFields(_ model.FieldWriter) {}
 func (s *ListMessagesArgsList) DecodeFields(_ model.FieldReader) {}
 
@@ -565,10 +477,45 @@ func (m *ListMessagesArgs) Validate(action byte) error {
 	return model.ValidateFields(action, m)
 }
 
+var ListMessagesArgs_ = struct {
+	TenantId string
+	RoomId string
+	AfterId string
+	Limit string
+}{
+	TenantId: "tenant_id",
+	RoomId: "room_id",
+	AfterId: "after_id",
+	Limit: "limit",
+}
+
+func ReadOneListMessagesArgs(qb *orm.QB, model *ListMessagesArgs) (*ListMessagesArgs, error) {
+	err := qb.ReadOne()
+	if err != nil {
+		return nil, err
+	}
+	return model, nil
+}
+
+func ReadAllListMessagesArgs(qb *orm.QB) (ListMessagesArgsList, error) {
+	var results ListMessagesArgsList
+	err := qb.ReadAll(
+		func() model.Model { return &ListMessagesArgs{} },
+		func(m model.Model) { results = append(results, m.(*ListMessagesArgs)) },
+	)
+	return results, err
+}
+
+func (m *ListMessagesArgs) SchemaExt() []model.FieldExt {
+	return []model.FieldExt{
+		{Field: ListMessagesArgsModel.Fields[1], Ref: "room", RefColumn: "id", OnDelete: ""},
+	}
+}
+
 type SendMessageArgs struct {
 	TenantId string
-	RoomId   string
-	Body     string
+	RoomId string
+	Body string
 }
 
 func (m *SendMessageArgs) ModelName() string { return "send_message_args" }
@@ -586,27 +533,17 @@ func (m *SendMessageArgs) EncodeFields(w model.FieldWriter) {
 }
 
 func (m *SendMessageArgs) DecodeFields(r model.FieldReader) {
-	if v, ok := r.String("tenant_id"); ok {
-		m.TenantId = v
-	}
-	if v, ok := r.String("room_id"); ok {
-		m.RoomId = v
-	}
-	if v, ok := r.String("body"); ok {
-		m.Body = v
-	}
+	if v, ok := r.String("tenant_id"); ok { m.TenantId = v }
+	if v, ok := r.String("room_id"); ok { m.RoomId = v }
+	if v, ok := r.String("body"); ok { m.Body = v }
 }
 
 type SendMessageArgsList []*SendMessageArgs
 
-func (s *SendMessageArgsList) Len() int               { return len(*s) }
+func (s *SendMessageArgsList) Len() int             { return len(*s) }
 func (s *SendMessageArgsList) At(i int) model.Fielder { return (*s)[i] }
-func (s *SendMessageArgsList) Append() model.Fielder {
-	v := &SendMessageArgs{}
-	*s = append(*s, v)
-	return v
-}
-func (s *SendMessageArgsList) IsNil() bool                      { return s == nil }
+func (s *SendMessageArgsList) Append() model.Fielder  { v := &SendMessageArgs{}; *s = append(*s, v); return v }
+func (s *SendMessageArgsList) IsNil() bool          { return s == nil }
 func (s *SendMessageArgsList) EncodeFields(_ model.FieldWriter) {}
 func (s *SendMessageArgsList) DecodeFields(_ model.FieldReader) {}
 
@@ -614,9 +551,42 @@ func (m *SendMessageArgs) Validate(action byte) error {
 	return model.ValidateFields(action, m)
 }
 
+var SendMessageArgs_ = struct {
+	TenantId string
+	RoomId string
+	Body string
+}{
+	TenantId: "tenant_id",
+	RoomId: "room_id",
+	Body: "body",
+}
+
+func ReadOneSendMessageArgs(qb *orm.QB, model *SendMessageArgs) (*SendMessageArgs, error) {
+	err := qb.ReadOne()
+	if err != nil {
+		return nil, err
+	}
+	return model, nil
+}
+
+func ReadAllSendMessageArgs(qb *orm.QB) (SendMessageArgsList, error) {
+	var results SendMessageArgsList
+	err := qb.ReadAll(
+		func() model.Model { return &SendMessageArgs{} },
+		func(m model.Model) { results = append(results, m.(*SendMessageArgs)) },
+	)
+	return results, err
+}
+
+func (m *SendMessageArgs) SchemaExt() []model.FieldExt {
+	return []model.FieldExt{
+		{Field: SendMessageArgsModel.Fields[1], Ref: "room", RefColumn: "id", OnDelete: ""},
+	}
+}
+
 type MarkReadArgs struct {
 	TenantId string
-	RoomId   string
+	RoomId string
 }
 
 func (m *MarkReadArgs) ModelName() string { return "mark_read_args" }
@@ -633,25 +603,52 @@ func (m *MarkReadArgs) EncodeFields(w model.FieldWriter) {
 }
 
 func (m *MarkReadArgs) DecodeFields(r model.FieldReader) {
-	if v, ok := r.String("tenant_id"); ok {
-		m.TenantId = v
-	}
-	if v, ok := r.String("room_id"); ok {
-		m.RoomId = v
-	}
+	if v, ok := r.String("tenant_id"); ok { m.TenantId = v }
+	if v, ok := r.String("room_id"); ok { m.RoomId = v }
 }
 
 type MarkReadArgsList []*MarkReadArgs
 
-func (s *MarkReadArgsList) Len() int                         { return len(*s) }
-func (s *MarkReadArgsList) At(i int) model.Fielder           { return (*s)[i] }
-func (s *MarkReadArgsList) Append() model.Fielder            { v := &MarkReadArgs{}; *s = append(*s, v); return v }
-func (s *MarkReadArgsList) IsNil() bool                      { return s == nil }
+func (s *MarkReadArgsList) Len() int             { return len(*s) }
+func (s *MarkReadArgsList) At(i int) model.Fielder { return (*s)[i] }
+func (s *MarkReadArgsList) Append() model.Fielder  { v := &MarkReadArgs{}; *s = append(*s, v); return v }
+func (s *MarkReadArgsList) IsNil() bool          { return s == nil }
 func (s *MarkReadArgsList) EncodeFields(_ model.FieldWriter) {}
 func (s *MarkReadArgsList) DecodeFields(_ model.FieldReader) {}
 
 func (m *MarkReadArgs) Validate(action byte) error {
 	return model.ValidateFields(action, m)
+}
+
+var MarkReadArgs_ = struct {
+	TenantId string
+	RoomId string
+}{
+	TenantId: "tenant_id",
+	RoomId: "room_id",
+}
+
+func ReadOneMarkReadArgs(qb *orm.QB, model *MarkReadArgs) (*MarkReadArgs, error) {
+	err := qb.ReadOne()
+	if err != nil {
+		return nil, err
+	}
+	return model, nil
+}
+
+func ReadAllMarkReadArgs(qb *orm.QB) (MarkReadArgsList, error) {
+	var results MarkReadArgsList
+	err := qb.ReadAll(
+		func() model.Model { return &MarkReadArgs{} },
+		func(m model.Model) { results = append(results, m.(*MarkReadArgs)) },
+	)
+	return results, err
+}
+
+func (m *MarkReadArgs) SchemaExt() []model.FieldExt {
+	return []model.FieldExt{
+		{Field: MarkReadArgsModel.Fields[1], Ref: "room", RefColumn: "id", OnDelete: ""},
+	}
 }
 
 type HeartbeatArgs struct {
@@ -671,21 +668,15 @@ func (m *HeartbeatArgs) EncodeFields(w model.FieldWriter) {
 }
 
 func (m *HeartbeatArgs) DecodeFields(r model.FieldReader) {
-	if v, ok := r.String("tenant_id"); ok {
-		m.TenantId = v
-	}
+	if v, ok := r.String("tenant_id"); ok { m.TenantId = v }
 }
 
 type HeartbeatArgsList []*HeartbeatArgs
 
-func (s *HeartbeatArgsList) Len() int               { return len(*s) }
+func (s *HeartbeatArgsList) Len() int             { return len(*s) }
 func (s *HeartbeatArgsList) At(i int) model.Fielder { return (*s)[i] }
-func (s *HeartbeatArgsList) Append() model.Fielder {
-	v := &HeartbeatArgs{}
-	*s = append(*s, v)
-	return v
-}
-func (s *HeartbeatArgsList) IsNil() bool                      { return s == nil }
+func (s *HeartbeatArgsList) Append() model.Fielder  { v := &HeartbeatArgs{}; *s = append(*s, v); return v }
+func (s *HeartbeatArgsList) IsNil() bool          { return s == nil }
 func (s *HeartbeatArgsList) EncodeFields(_ model.FieldWriter) {}
 func (s *HeartbeatArgsList) DecodeFields(_ model.FieldReader) {}
 
@@ -710,21 +701,15 @@ func (m *ListGroupsArgs) EncodeFields(w model.FieldWriter) {
 }
 
 func (m *ListGroupsArgs) DecodeFields(r model.FieldReader) {
-	if v, ok := r.String("tenant_id"); ok {
-		m.TenantId = v
-	}
+	if v, ok := r.String("tenant_id"); ok { m.TenantId = v }
 }
 
 type ListGroupsArgsList []*ListGroupsArgs
 
-func (s *ListGroupsArgsList) Len() int               { return len(*s) }
+func (s *ListGroupsArgsList) Len() int             { return len(*s) }
 func (s *ListGroupsArgsList) At(i int) model.Fielder { return (*s)[i] }
-func (s *ListGroupsArgsList) Append() model.Fielder {
-	v := &ListGroupsArgs{}
-	*s = append(*s, v)
-	return v
-}
-func (s *ListGroupsArgsList) IsNil() bool                      { return s == nil }
+func (s *ListGroupsArgsList) Append() model.Fielder  { v := &ListGroupsArgs{}; *s = append(*s, v); return v }
+func (s *ListGroupsArgsList) IsNil() bool          { return s == nil }
 func (s *ListGroupsArgsList) EncodeFields(_ model.FieldWriter) {}
 func (s *ListGroupsArgsList) DecodeFields(_ model.FieldReader) {}
 
@@ -732,59 +717,10 @@ func (m *ListGroupsArgs) Validate(action byte) error {
 	return model.ValidateFields(action, m)
 }
 
-type SaveGroupArgs struct {
-	TenantId string
-	Id       string
-	Name     string
-}
-
-func (m *SaveGroupArgs) ModelName() string { return "save_group_args" }
-
-func (m *SaveGroupArgs) Schema() []model.Field { return SaveGroupArgsModel.Fields }
-
-func (m *SaveGroupArgs) Pointers() []any { return []any{&m.TenantId, &m.Id, &m.Name} }
-
-func (m *SaveGroupArgs) IsNil() bool { return m == nil }
-
-func (m *SaveGroupArgs) EncodeFields(w model.FieldWriter) {
-	w.String("tenant_id", m.TenantId)
-	w.String("id", m.Id)
-	w.String("name", m.Name)
-}
-
-func (m *SaveGroupArgs) DecodeFields(r model.FieldReader) {
-	if v, ok := r.String("tenant_id"); ok {
-		m.TenantId = v
-	}
-	if v, ok := r.String("id"); ok {
-		m.Id = v
-	}
-	if v, ok := r.String("name"); ok {
-		m.Name = v
-	}
-}
-
-type SaveGroupArgsList []*SaveGroupArgs
-
-func (s *SaveGroupArgsList) Len() int               { return len(*s) }
-func (s *SaveGroupArgsList) At(i int) model.Fielder { return (*s)[i] }
-func (s *SaveGroupArgsList) Append() model.Fielder {
-	v := &SaveGroupArgs{}
-	*s = append(*s, v)
-	return v
-}
-func (s *SaveGroupArgsList) IsNil() bool                      { return s == nil }
-func (s *SaveGroupArgsList) EncodeFields(_ model.FieldWriter) {}
-func (s *SaveGroupArgsList) DecodeFields(_ model.FieldReader) {}
-
-func (m *SaveGroupArgs) Validate(action byte) error {
-	return model.ValidateFields(action, m)
-}
-
 type SetGroupMembersArgs struct {
 	TenantId string
-	RoomId   string
-	UserIds  []IdRef
+	RoomId string
+	UserIds []IdRef
 }
 
 func (m *SetGroupMembersArgs) ModelName() string { return "set_group_members_args" }
@@ -798,21 +734,17 @@ func (m *SetGroupMembersArgs) IsNil() bool { return m == nil }
 func (m *SetGroupMembersArgs) EncodeFields(w model.FieldWriter) {
 	w.String("tenant_id", m.TenantId)
 	w.String("room_id", m.RoomId)
-	{
-		arr := w.Array("user_ids", len(m.UserIds))
-		for _, x := range m.UserIds {
-			arr.Object(&x)
+		{
+			arr := w.Array("user_ids", len(m.UserIds))
+			for _, x := range m.UserIds {
+				arr.Object(&x)
+			}
 		}
-	}
 }
 
 func (m *SetGroupMembersArgs) DecodeFields(r model.FieldReader) {
-	if v, ok := r.String("tenant_id"); ok {
-		m.TenantId = v
-	}
-	if v, ok := r.String("room_id"); ok {
-		m.RoomId = v
-	}
+	if v, ok := r.String("tenant_id"); ok { m.TenantId = v }
+	if v, ok := r.String("room_id"); ok { m.RoomId = v }
 	if arr, ok := r.Array("user_ids"); ok {
 		n := arr.Len()
 		m.UserIds = make([]IdRef, n)
@@ -824,14 +756,10 @@ func (m *SetGroupMembersArgs) DecodeFields(r model.FieldReader) {
 
 type SetGroupMembersArgsList []*SetGroupMembersArgs
 
-func (s *SetGroupMembersArgsList) Len() int               { return len(*s) }
+func (s *SetGroupMembersArgsList) Len() int             { return len(*s) }
 func (s *SetGroupMembersArgsList) At(i int) model.Fielder { return (*s)[i] }
-func (s *SetGroupMembersArgsList) Append() model.Fielder {
-	v := &SetGroupMembersArgs{}
-	*s = append(*s, v)
-	return v
-}
-func (s *SetGroupMembersArgsList) IsNil() bool                      { return s == nil }
+func (s *SetGroupMembersArgsList) Append() model.Fielder  { v := &SetGroupMembersArgs{}; *s = append(*s, v); return v }
+func (s *SetGroupMembersArgsList) IsNil() bool          { return s == nil }
 func (s *SetGroupMembersArgsList) EncodeFields(_ model.FieldWriter) {}
 func (s *SetGroupMembersArgsList) DecodeFields(_ model.FieldReader) {}
 
@@ -839,9 +767,42 @@ func (m *SetGroupMembersArgs) Validate(action byte) error {
 	return model.ValidateFields(action, m)
 }
 
+var SetGroupMembersArgs_ = struct {
+	TenantId string
+	RoomId string
+	UserIds string
+}{
+	TenantId: "tenant_id",
+	RoomId: "room_id",
+	UserIds: "user_ids",
+}
+
+func ReadOneSetGroupMembersArgs(qb *orm.QB, model *SetGroupMembersArgs) (*SetGroupMembersArgs, error) {
+	err := qb.ReadOne()
+	if err != nil {
+		return nil, err
+	}
+	return model, nil
+}
+
+func ReadAllSetGroupMembersArgs(qb *orm.QB) (SetGroupMembersArgsList, error) {
+	var results SetGroupMembersArgsList
+	err := qb.ReadAll(
+		func() model.Model { return &SetGroupMembersArgs{} },
+		func(m model.Model) { results = append(results, m.(*SetGroupMembersArgs)) },
+	)
+	return results, err
+}
+
+func (m *SetGroupMembersArgs) SchemaExt() []model.FieldExt {
+	return []model.FieldExt{
+		{Field: SetGroupMembersArgsModel.Fields[1], Ref: "room", RefColumn: "id", OnDelete: ""},
+	}
+}
+
 type ListGroupMembersArgs struct {
 	TenantId string
-	RoomId   string
+	RoomId string
 }
 
 func (m *ListGroupMembersArgs) ModelName() string { return "list_group_members_args" }
@@ -858,24 +819,16 @@ func (m *ListGroupMembersArgs) EncodeFields(w model.FieldWriter) {
 }
 
 func (m *ListGroupMembersArgs) DecodeFields(r model.FieldReader) {
-	if v, ok := r.String("tenant_id"); ok {
-		m.TenantId = v
-	}
-	if v, ok := r.String("room_id"); ok {
-		m.RoomId = v
-	}
+	if v, ok := r.String("tenant_id"); ok { m.TenantId = v }
+	if v, ok := r.String("room_id"); ok { m.RoomId = v }
 }
 
 type ListGroupMembersArgsList []*ListGroupMembersArgs
 
-func (s *ListGroupMembersArgsList) Len() int               { return len(*s) }
+func (s *ListGroupMembersArgsList) Len() int             { return len(*s) }
 func (s *ListGroupMembersArgsList) At(i int) model.Fielder { return (*s)[i] }
-func (s *ListGroupMembersArgsList) Append() model.Fielder {
-	v := &ListGroupMembersArgs{}
-	*s = append(*s, v)
-	return v
-}
-func (s *ListGroupMembersArgsList) IsNil() bool                      { return s == nil }
+func (s *ListGroupMembersArgsList) Append() model.Fielder  { v := &ListGroupMembersArgs{}; *s = append(*s, v); return v }
+func (s *ListGroupMembersArgsList) IsNil() bool          { return s == nil }
 func (s *ListGroupMembersArgsList) EncodeFields(_ model.FieldWriter) {}
 func (s *ListGroupMembersArgsList) DecodeFields(_ model.FieldReader) {}
 
@@ -883,53 +836,40 @@ func (m *ListGroupMembersArgs) Validate(action byte) error {
 	return model.ValidateFields(action, m)
 }
 
-type DeleteGroupArgs struct {
+var ListGroupMembersArgs_ = struct {
 	TenantId string
-	Id       string
+	RoomId string
+}{
+	TenantId: "tenant_id",
+	RoomId: "room_id",
 }
 
-func (m *DeleteGroupArgs) ModelName() string { return "delete_group_args" }
-
-func (m *DeleteGroupArgs) Schema() []model.Field { return DeleteGroupArgsModel.Fields }
-
-func (m *DeleteGroupArgs) Pointers() []any { return []any{&m.TenantId, &m.Id} }
-
-func (m *DeleteGroupArgs) IsNil() bool { return m == nil }
-
-func (m *DeleteGroupArgs) EncodeFields(w model.FieldWriter) {
-	w.String("tenant_id", m.TenantId)
-	w.String("id", m.Id)
-}
-
-func (m *DeleteGroupArgs) DecodeFields(r model.FieldReader) {
-	if v, ok := r.String("tenant_id"); ok {
-		m.TenantId = v
+func ReadOneListGroupMembersArgs(qb *orm.QB, model *ListGroupMembersArgs) (*ListGroupMembersArgs, error) {
+	err := qb.ReadOne()
+	if err != nil {
+		return nil, err
 	}
-	if v, ok := r.String("id"); ok {
-		m.Id = v
+	return model, nil
+}
+
+func ReadAllListGroupMembersArgs(qb *orm.QB) (ListGroupMembersArgsList, error) {
+	var results ListGroupMembersArgsList
+	err := qb.ReadAll(
+		func() model.Model { return &ListGroupMembersArgs{} },
+		func(m model.Model) { results = append(results, m.(*ListGroupMembersArgs)) },
+	)
+	return results, err
+}
+
+func (m *ListGroupMembersArgs) SchemaExt() []model.FieldExt {
+	return []model.FieldExt{
+		{Field: ListGroupMembersArgsModel.Fields[1], Ref: "room", RefColumn: "id", OnDelete: ""},
 	}
-}
-
-type DeleteGroupArgsList []*DeleteGroupArgs
-
-func (s *DeleteGroupArgsList) Len() int               { return len(*s) }
-func (s *DeleteGroupArgsList) At(i int) model.Fielder { return (*s)[i] }
-func (s *DeleteGroupArgsList) Append() model.Fielder {
-	v := &DeleteGroupArgs{}
-	*s = append(*s, v)
-	return v
-}
-func (s *DeleteGroupArgsList) IsNil() bool                      { return s == nil }
-func (s *DeleteGroupArgsList) EncodeFields(_ model.FieldWriter) {}
-func (s *DeleteGroupArgsList) DecodeFields(_ model.FieldReader) {}
-
-func (m *DeleteGroupArgs) Validate(action byte) error {
-	return model.ValidateFields(action, m)
 }
 
 type Participant struct {
 	UserId string
-	Label  string
+	Label string
 	Online bool
 }
 
@@ -948,23 +888,17 @@ func (m *Participant) EncodeFields(w model.FieldWriter) {
 }
 
 func (m *Participant) DecodeFields(r model.FieldReader) {
-	if v, ok := r.String("user_id"); ok {
-		m.UserId = v
-	}
-	if v, ok := r.String("label"); ok {
-		m.Label = v
-	}
-	if v, ok := r.Bool("online"); ok {
-		m.Online = v
-	}
+	if v, ok := r.String("user_id"); ok { m.UserId = v }
+	if v, ok := r.String("label"); ok { m.Label = v }
+	if v, ok := r.Bool("online"); ok { m.Online = v }
 }
 
 type ParticipantList []*Participant
 
-func (s *ParticipantList) Len() int                         { return len(*s) }
-func (s *ParticipantList) At(i int) model.Fielder           { return (*s)[i] }
-func (s *ParticipantList) Append() model.Fielder            { v := &Participant{}; *s = append(*s, v); return v }
-func (s *ParticipantList) IsNil() bool                      { return s == nil }
+func (s *ParticipantList) Len() int             { return len(*s) }
+func (s *ParticipantList) At(i int) model.Fielder { return (*s)[i] }
+func (s *ParticipantList) Append() model.Fielder  { v := &Participant{}; *s = append(*s, v); return v }
+func (s *ParticipantList) IsNil() bool          { return s == nil }
 func (s *ParticipantList) EncodeFields(_ model.FieldWriter) {}
 func (s *ParticipantList) DecodeFields(_ model.FieldReader) {}
 
@@ -973,21 +907,19 @@ func (m *Participant) Validate(action byte) error {
 }
 
 type RoomSummary struct {
-	RoomId        string
-	Kind          string
-	Title         string
-	Unread        int64
+	RoomId string
+	Kind string
+	Title string
+	Unread int64
 	LastMessageAt time.Nano
-	LastPreview   string
+	LastPreview string
 }
 
 func (m *RoomSummary) ModelName() string { return "room_summary" }
 
 func (m *RoomSummary) Schema() []model.Field { return RoomSummaryModel.Fields }
 
-func (m *RoomSummary) Pointers() []any {
-	return []any{&m.RoomId, &m.Kind, &m.Title, &m.Unread, (*int64)(&m.LastMessageAt), &m.LastPreview}
-}
+func (m *RoomSummary) Pointers() []any { return []any{&m.RoomId, &m.Kind, &m.Title, &m.Unread, (*int64)(&m.LastMessageAt), &m.LastPreview} }
 
 func (m *RoomSummary) IsNil() bool { return m == nil }
 
@@ -1001,32 +933,20 @@ func (m *RoomSummary) EncodeFields(w model.FieldWriter) {
 }
 
 func (m *RoomSummary) DecodeFields(r model.FieldReader) {
-	if v, ok := r.String("room_id"); ok {
-		m.RoomId = v
-	}
-	if v, ok := r.String("kind"); ok {
-		m.Kind = v
-	}
-	if v, ok := r.String("title"); ok {
-		m.Title = v
-	}
-	if v, ok := r.Int("unread"); ok {
-		m.Unread = v
-	}
-	if v, ok := r.Int("last_message_at"); ok {
-		m.LastMessageAt = time.Nano(v)
-	}
-	if v, ok := r.String("last_preview"); ok {
-		m.LastPreview = v
-	}
+	if v, ok := r.String("room_id"); ok { m.RoomId = v }
+	if v, ok := r.String("kind"); ok { m.Kind = v }
+	if v, ok := r.String("title"); ok { m.Title = v }
+	if v, ok := r.Int("unread"); ok { m.Unread = v }
+	if v, ok := r.Int("last_message_at"); ok { m.LastMessageAt = time.Nano(v) }
+	if v, ok := r.String("last_preview"); ok { m.LastPreview = v }
 }
 
 type RoomSummaryList []*RoomSummary
 
-func (s *RoomSummaryList) Len() int                         { return len(*s) }
-func (s *RoomSummaryList) At(i int) model.Fielder           { return (*s)[i] }
-func (s *RoomSummaryList) Append() model.Fielder            { v := &RoomSummary{}; *s = append(*s, v); return v }
-func (s *RoomSummaryList) IsNil() bool                      { return s == nil }
+func (s *RoomSummaryList) Len() int             { return len(*s) }
+func (s *RoomSummaryList) At(i int) model.Fielder { return (*s)[i] }
+func (s *RoomSummaryList) Append() model.Fielder  { v := &RoomSummary{}; *s = append(*s, v); return v }
+func (s *RoomSummaryList) IsNil() bool          { return s == nil }
 func (s *RoomSummaryList) EncodeFields(_ model.FieldWriter) {}
 func (s *RoomSummaryList) DecodeFields(_ model.FieldReader) {}
 
@@ -1034,24 +954,61 @@ func (m *RoomSummary) Validate(action byte) error {
 	return model.ValidateFields(action, m)
 }
 
+var RoomSummary_ = struct {
+	RoomId string
+	Kind string
+	Title string
+	Unread string
+	LastMessageAt string
+	LastPreview string
+}{
+	RoomId: "room_id",
+	Kind: "kind",
+	Title: "title",
+	Unread: "unread",
+	LastMessageAt: "last_message_at",
+	LastPreview: "last_preview",
+}
+
+func ReadOneRoomSummary(qb *orm.QB, model *RoomSummary) (*RoomSummary, error) {
+	err := qb.ReadOne()
+	if err != nil {
+		return nil, err
+	}
+	return model, nil
+}
+
+func ReadAllRoomSummary(qb *orm.QB) (RoomSummaryList, error) {
+	var results RoomSummaryList
+	err := qb.ReadAll(
+		func() model.Model { return &RoomSummary{} },
+		func(m model.Model) { results = append(results, m.(*RoomSummary)) },
+	)
+	return results, err
+}
+
+func (m *RoomSummary) SchemaExt() []model.FieldExt {
+	return []model.FieldExt{
+		{Field: RoomSummaryModel.Fields[0], Ref: "room", RefColumn: "id", OnDelete: ""},
+	}
+}
+
 type MessageView struct {
-	Id          string
-	RoomId      string
-	SenderId    string
+	Id string
+	RoomId string
+	SenderId string
 	SenderLabel string
-	Body        string
-	CreatedAt   time.Nano
-	Mine        bool
-	Read        bool
+	Body string
+	CreatedAt time.Nano
+	Mine bool
+	Read bool
 }
 
 func (m *MessageView) ModelName() string { return "message_view" }
 
 func (m *MessageView) Schema() []model.Field { return MessageViewModel.Fields }
 
-func (m *MessageView) Pointers() []any {
-	return []any{&m.Id, &m.RoomId, &m.SenderId, &m.SenderLabel, &m.Body, (*int64)(&m.CreatedAt), &m.Mine, &m.Read}
-}
+func (m *MessageView) Pointers() []any { return []any{&m.Id, &m.RoomId, &m.SenderId, &m.SenderLabel, &m.Body, (*int64)(&m.CreatedAt), &m.Mine, &m.Read} }
 
 func (m *MessageView) IsNil() bool { return m == nil }
 
@@ -1067,38 +1024,22 @@ func (m *MessageView) EncodeFields(w model.FieldWriter) {
 }
 
 func (m *MessageView) DecodeFields(r model.FieldReader) {
-	if v, ok := r.String("id"); ok {
-		m.Id = v
-	}
-	if v, ok := r.String("room_id"); ok {
-		m.RoomId = v
-	}
-	if v, ok := r.String("sender_id"); ok {
-		m.SenderId = v
-	}
-	if v, ok := r.String("sender_label"); ok {
-		m.SenderLabel = v
-	}
-	if v, ok := r.String("body"); ok {
-		m.Body = v
-	}
-	if v, ok := r.Int("created_at"); ok {
-		m.CreatedAt = time.Nano(v)
-	}
-	if v, ok := r.Bool("mine"); ok {
-		m.Mine = v
-	}
-	if v, ok := r.Bool("read"); ok {
-		m.Read = v
-	}
+	if v, ok := r.String("id"); ok { m.Id = v }
+	if v, ok := r.String("room_id"); ok { m.RoomId = v }
+	if v, ok := r.String("sender_id"); ok { m.SenderId = v }
+	if v, ok := r.String("sender_label"); ok { m.SenderLabel = v }
+	if v, ok := r.String("body"); ok { m.Body = v }
+	if v, ok := r.Int("created_at"); ok { m.CreatedAt = time.Nano(v) }
+	if v, ok := r.Bool("mine"); ok { m.Mine = v }
+	if v, ok := r.Bool("read"); ok { m.Read = v }
 }
 
 type MessageViewList []*MessageView
 
-func (s *MessageViewList) Len() int                         { return len(*s) }
-func (s *MessageViewList) At(i int) model.Fielder           { return (*s)[i] }
-func (s *MessageViewList) Append() model.Fielder            { v := &MessageView{}; *s = append(*s, v); return v }
-func (s *MessageViewList) IsNil() bool                      { return s == nil }
+func (s *MessageViewList) Len() int             { return len(*s) }
+func (s *MessageViewList) At(i int) model.Fielder { return (*s)[i] }
+func (s *MessageViewList) Append() model.Fielder  { v := &MessageView{}; *s = append(*s, v); return v }
+func (s *MessageViewList) IsNil() bool          { return s == nil }
 func (s *MessageViewList) EncodeFields(_ model.FieldWriter) {}
 func (s *MessageViewList) DecodeFields(_ model.FieldReader) {}
 
@@ -1106,20 +1047,61 @@ func (m *MessageView) Validate(action byte) error {
 	return model.ValidateFields(action, m)
 }
 
+var MessageView_ = struct {
+	Id string
+	RoomId string
+	SenderId string
+	SenderLabel string
+	Body string
+	CreatedAt string
+	Mine string
+	Read string
+}{
+	Id: "id",
+	RoomId: "room_id",
+	SenderId: "sender_id",
+	SenderLabel: "sender_label",
+	Body: "body",
+	CreatedAt: "created_at",
+	Mine: "mine",
+	Read: "read",
+}
+
+func ReadOneMessageView(qb *orm.QB, model *MessageView) (*MessageView, error) {
+	err := qb.ReadOne()
+	if err != nil {
+		return nil, err
+	}
+	return model, nil
+}
+
+func ReadAllMessageView(qb *orm.QB) (MessageViewList, error) {
+	var results MessageViewList
+	err := qb.ReadAll(
+		func() model.Model { return &MessageView{} },
+		func(m model.Model) { results = append(results, m.(*MessageView)) },
+	)
+	return results, err
+}
+
+func (m *MessageView) SchemaExt() []model.FieldExt {
+	return []model.FieldExt{
+		{Field: MessageViewModel.Fields[1], Ref: "room", RefColumn: "id", OnDelete: ""},
+	}
+}
+
 type MessageSentEvent struct {
-	TenantId  string
-	RoomId    string
+	TenantId string
+	RoomId string
 	MessageId string
-	SenderId  string
+	SenderId string
 }
 
 func (m *MessageSentEvent) ModelName() string { return "message_sent_event" }
 
 func (m *MessageSentEvent) Schema() []model.Field { return MessageSentEventModel.Fields }
 
-func (m *MessageSentEvent) Pointers() []any {
-	return []any{&m.TenantId, &m.RoomId, &m.MessageId, &m.SenderId}
-}
+func (m *MessageSentEvent) Pointers() []any { return []any{&m.TenantId, &m.RoomId, &m.MessageId, &m.SenderId} }
 
 func (m *MessageSentEvent) IsNil() bool { return m == nil }
 
@@ -1131,33 +1113,56 @@ func (m *MessageSentEvent) EncodeFields(w model.FieldWriter) {
 }
 
 func (m *MessageSentEvent) DecodeFields(r model.FieldReader) {
-	if v, ok := r.String("tenant_id"); ok {
-		m.TenantId = v
-	}
-	if v, ok := r.String("room_id"); ok {
-		m.RoomId = v
-	}
-	if v, ok := r.String("message_id"); ok {
-		m.MessageId = v
-	}
-	if v, ok := r.String("sender_id"); ok {
-		m.SenderId = v
-	}
+	if v, ok := r.String("tenant_id"); ok { m.TenantId = v }
+	if v, ok := r.String("room_id"); ok { m.RoomId = v }
+	if v, ok := r.String("message_id"); ok { m.MessageId = v }
+	if v, ok := r.String("sender_id"); ok { m.SenderId = v }
 }
 
 type MessageSentEventList []*MessageSentEvent
 
-func (s *MessageSentEventList) Len() int               { return len(*s) }
+func (s *MessageSentEventList) Len() int             { return len(*s) }
 func (s *MessageSentEventList) At(i int) model.Fielder { return (*s)[i] }
-func (s *MessageSentEventList) Append() model.Fielder {
-	v := &MessageSentEvent{}
-	*s = append(*s, v)
-	return v
-}
-func (s *MessageSentEventList) IsNil() bool                      { return s == nil }
+func (s *MessageSentEventList) Append() model.Fielder  { v := &MessageSentEvent{}; *s = append(*s, v); return v }
+func (s *MessageSentEventList) IsNil() bool          { return s == nil }
 func (s *MessageSentEventList) EncodeFields(_ model.FieldWriter) {}
 func (s *MessageSentEventList) DecodeFields(_ model.FieldReader) {}
 
 func (m *MessageSentEvent) Validate(action byte) error {
 	return model.ValidateFields(action, m)
+}
+
+var MessageSentEvent_ = struct {
+	TenantId string
+	RoomId string
+	MessageId string
+	SenderId string
+}{
+	TenantId: "tenant_id",
+	RoomId: "room_id",
+	MessageId: "message_id",
+	SenderId: "sender_id",
+}
+
+func ReadOneMessageSentEvent(qb *orm.QB, model *MessageSentEvent) (*MessageSentEvent, error) {
+	err := qb.ReadOne()
+	if err != nil {
+		return nil, err
+	}
+	return model, nil
+}
+
+func ReadAllMessageSentEvent(qb *orm.QB) (MessageSentEventList, error) {
+	var results MessageSentEventList
+	err := qb.ReadAll(
+		func() model.Model { return &MessageSentEvent{} },
+		func(m model.Model) { results = append(results, m.(*MessageSentEvent)) },
+	)
+	return results, err
+}
+
+func (m *MessageSentEvent) SchemaExt() []model.FieldExt {
+	return []model.FieldExt{
+		{Field: MessageSentEventModel.Fields[1], Ref: "room", RefColumn: "id", OnDelete: ""},
+	}
 }

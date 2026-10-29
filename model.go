@@ -1,15 +1,12 @@
 package chatroom
 
 import (
-	"webtyp.com/time"
 	"webtyp.com/input"
 	"webtyp.com/model"
+	"webtyp.com/time"
 )
 
 const ModelName = "chat_room"
-
-// Recursos RBAC (solo para administrar grupos; chatear exige solo sesión).
-const ResourceGroup = "chat_group"
 
 // Tipos de sala — únicos valores de chat_room.kind.
 const (
@@ -19,12 +16,12 @@ const (
 )
 
 const (
-	BroadcastName            = "General"
-	MaxBodyLength            = 2000
-	PreviewLength            = 80
-	HeartbeatIntervalSeconds = 30 // lo usa la vista
-	presenceWindow time.Unix = 90
-	DefaultMessagesPageLimit = 50
+	BroadcastName                      = "General"
+	MaxBodyLength                      = 2000
+	PreviewLength                      = 80
+	HeartbeatIntervalSeconds           = 30 // lo usa la vista
+	presenceWindow           time.Unix = 90
+	DefaultMessagesPageLimit           = 50
 )
 
 var RoomModel = model.Definition{
@@ -34,7 +31,7 @@ var RoomModel = model.Definition{
 		{Name: "tenant_id", Type: model.Text(), NotNull: true},
 		{Name: "kind", Type: model.Text(), NotNull: true},
 		{Name: "name", Type: input.Text(), Item: model.ItemLabel, OmitEmpty: true, Permitted: model.Permitted{Maximum: 60}}, // solo group y broadcast; lo edita el admin en el formulario de grupos
-		{Name: "direct_key", Type: model.Text(), OmitEmpty: true},                                    // solo direct: "<idMenor>|<idMayor>"
+		{Name: "direct_key", Type: model.Text(), OmitEmpty: true},                                                           // solo direct: "<idMenor>|<idMayor>"
 		{Name: "created_at", Type: model.NanoTime(), NotNull: true},
 		{Name: "updated_at", Type: model.NanoTime(), OmitEmpty: true},
 	},
@@ -100,7 +97,7 @@ var ListMessagesArgsModel = model.Definition{
 	Name: "list_messages_args",
 	Fields: model.Fields{
 		{Name: "tenant_id", Type: model.Text()},
-		{Name: "room_id", Type: model.Text(), NotNull: true},
+		{Name: "room_id", Type: model.Text(), Ref: &RoomModel, DB: &model.FieldDB{RefColumn: "id"}, NotNull: true},
 		{Name: "after_id", Type: model.Text()},
 		{Name: "limit", Type: model.Int()},
 	},
@@ -110,7 +107,7 @@ var SendMessageArgsModel = model.Definition{
 	Name: "send_message_args",
 	Fields: model.Fields{
 		{Name: "tenant_id", Type: model.Text()},
-		{Name: "room_id", Type: model.Text(), NotNull: true},
+		{Name: "room_id", Type: model.Text(), Ref: &RoomModel, DB: &model.FieldDB{RefColumn: "id"}, NotNull: true},
 		{Name: "body", Type: input.Textarea(), NotNull: true, Permitted: model.Permitted{Minimum: 1, Maximum: MaxBodyLength}},
 	},
 }
@@ -119,7 +116,7 @@ var MarkReadArgsModel = model.Definition{
 	Name: "mark_read_args",
 	Fields: model.Fields{
 		{Name: "tenant_id", Type: model.Text()},
-		{Name: "room_id", Type: model.Text(), NotNull: true},
+		{Name: "room_id", Type: model.Text(), Ref: &RoomModel, DB: &model.FieldDB{RefColumn: "id"}, NotNull: true},
 	},
 }
 
@@ -137,20 +134,11 @@ var ListGroupsArgsModel = model.Definition{
 	},
 }
 
-var SaveGroupArgsModel = model.Definition{
-	Name: "save_group_args",
-	Fields: model.Fields{
-		{Name: "tenant_id", Type: model.Text()},
-		{Name: "id", Type: model.Text()},
-		{Name: "name", Type: input.Text(), NotNull: true, Permitted: model.Permitted{Minimum: 1, Maximum: 60}},
-	},
-}
-
 var SetGroupMembersArgsModel = model.Definition{
 	Name: "set_group_members_args",
 	Fields: model.Fields{
 		{Name: "tenant_id", Type: model.Text()},
-		{Name: "room_id", Type: model.Text(), NotNull: true},
+		{Name: "room_id", Type: model.Text(), Ref: &RoomModel, DB: &model.FieldDB{RefColumn: "id"}, NotNull: true},
 		{Name: "user_ids", Type: model.StructSlice(&IdRefModel)},
 	},
 }
@@ -159,15 +147,7 @@ var ListGroupMembersArgsModel = model.Definition{
 	Name: "list_group_members_args",
 	Fields: model.Fields{
 		{Name: "tenant_id", Type: model.Text()},
-		{Name: "room_id", Type: model.Text(), NotNull: true},
-	},
-}
-
-var DeleteGroupArgsModel = model.Definition{
-	Name: "delete_group_args",
-	Fields: model.Fields{
-		{Name: "tenant_id", Type: model.Text()},
-		{Name: "id", Type: model.Text(), NotNull: true},
+		{Name: "room_id", Type: model.Text(), Ref: &RoomModel, DB: &model.FieldDB{RefColumn: "id"}, NotNull: true},
 	},
 }
 
@@ -185,7 +165,7 @@ var ParticipantModel = model.Definition{
 var RoomSummaryModel = model.Definition{
 	Name: "room_summary",
 	Fields: model.Fields{
-		{Name: "room_id", Type: model.Text(), NotNull: true},
+		{Name: "room_id", Type: model.Text(), Ref: &RoomModel, DB: &model.FieldDB{RefColumn: "id"}, NotNull: true},
 		{Name: "kind", Type: model.Text(), NotNull: true},
 		{Name: "title", Type: model.Text(), NotNull: true},
 		{Name: "unread", Type: model.Int(), NotNull: true},
@@ -198,7 +178,7 @@ var MessageViewModel = model.Definition{
 	Name: "message_view",
 	Fields: model.Fields{
 		{Name: "id", Type: model.Text(), NotNull: true},
-		{Name: "room_id", Type: model.Text(), NotNull: true},
+		{Name: "room_id", Type: model.Text(), Ref: &RoomModel, DB: &model.FieldDB{RefColumn: "id"}, NotNull: true},
 		{Name: "sender_id", Type: model.Text(), NotNull: true},
 		{Name: "sender_label", Type: model.Text(), NotNull: true},
 		{Name: "body", Type: model.Text(), NotNull: true},
@@ -212,31 +192,24 @@ var MessageSentEventModel = model.Definition{
 	Name: "message_sent_event",
 	Fields: model.Fields{
 		{Name: "tenant_id", Type: model.Text(), NotNull: true},
-		{Name: "room_id", Type: model.Text(), NotNull: true},
+		{Name: "room_id", Type: model.Text(), Ref: &RoomModel, DB: &model.FieldDB{RefColumn: "id"}, NotNull: true},
 		{Name: "message_id", Type: model.Text(), NotNull: true},
 		{Name: "sender_id", Type: model.Text(), NotNull: true},
 	},
 }
 
-// domainError is the concrete type of this package's sentinel errors. Code
-// compares them by asserting this type and comparing the value: == between two
-// error values compiles, under TinyGo, to runtime.interfaceEqual, which pulls
-// internal/reflectlite into the wasm binary.
-type domainError string
-
-func (e domainError) Error() string { return string(e) }
-
 // Errors (exact text)
 const (
-	ErrNotFound        domainError = "chat_room: not found"
-	ErrTenantRequired  domainError = "chat_room: tenant_id is required"
-	ErrUnauthenticated domainError = "chat_room: authenticated user required"
-	ErrNotMember       domainError = "chat_room: not a member of this room"
-	ErrUnknownUser     domainError = "chat_room: unknown participant"
-	ErrSelfDirect      domainError = "chat_room: cannot open a direct room with yourself"
-	ErrEmptyBody       domainError = "chat_room: message body is empty"
-	ErrBodyTooLong     domainError = "chat_room: message body is too long"
-	ErrNotGroup        domainError = "chat_room: room is not a group"
+	ErrNotFound        model.NotFound = "chat_room: not found"
+	ErrTenantRequired  model.Invalid  = "chat_room: tenant_id is required"
+	ErrUnauthenticated model.Invalid  = "chat_room: authenticated user required"
+	ErrNotMember       model.Invalid  = "chat_room: not a member of this room"
+	ErrUnknownUser     model.Invalid  = "chat_room: unknown participant"
+	ErrSelfDirect      model.Invalid  = "chat_room: cannot open a direct room with yourself"
+	ErrEmptyBody       model.Invalid  = "chat_room: message body is empty"
+	ErrBodyTooLong     model.Invalid  = "chat_room: message body is too long"
+	ErrNotGroup        model.Invalid  = "chat_room: room is not a group"
+	ErrCannotRead      model.Invalid  = "chat_room: cannot read the request"
 )
 
 // Events & Topics

@@ -93,7 +93,7 @@ func TestAllOpsAndViews(t *testing.T) {
 	}
 
 	// SaveGroup Op
-	ctx = &mock.Context{InBody: []byte(`{"tenant_id":"t1","name":"Op Group"}`)}
+	ctx = &mock.Context{InBody: []byte(`{"records":[{"tenant_id":"t1","name":"Op Group"}]}`)}
 	ctx.SetUserID("u1")
 	r.Invoke("OP", "/"+chatroom.OpSaveGroup, ctx)
 	if ctx.Status != 200 && ctx.Status != 0 {
@@ -131,10 +131,10 @@ func TestAllOpsAndViews(t *testing.T) {
 	}
 
 	// DeleteGroup Op
-	ctx = &mock.Context{InBody: []byte(fmt.Sprintf(`{"tenant_id":"t1","id":"%s"}`, group.Id))}
+	ctx = &mock.Context{InBody: []byte(fmt.Sprintf(`{"ids":["%s"]}`, group.Id))}
 	ctx.SetUserID("u1")
 	r.Invoke("OP", "/"+chatroom.OpDeleteGroup, ctx)
-	if ctx.Status != 200 && ctx.Status != 0 {
+	if ctx.Status != 200 && ctx.Status != 204 && ctx.Status != 0 {
 		t.Fatalf("OpDeleteGroup failed: %d", ctx.Status)
 	}
 
@@ -282,16 +282,6 @@ func TestModelORMMethods(t *testing.T) {
 		t.Fatalf("ListGroupsArgsList failed")
 	}
 
-	sgArgs := &chatroom.SaveGroupArgs{TenantId: "t1", Name: "g"}
-	if sgArgs.ModelName() == "" || sgArgs.Schema() == nil || len(sgArgs.Pointers()) == 0 || sgArgs.IsNil() {
-		t.Fatalf("SaveGroupArgs failed")
-	}
-	var sgList chatroom.SaveGroupArgsList
-	sgList = append(sgList, sgArgs)
-	if sgList.Len() != 1 {
-		t.Fatalf("SaveGroupArgsList failed")
-	}
-
 	sgmArgs := &chatroom.SetGroupMembersArgs{TenantId: "t1", RoomId: "r1"}
 	if sgmArgs.ModelName() == "" || sgmArgs.Schema() == nil || len(sgmArgs.Pointers()) == 0 || sgmArgs.IsNil() {
 		t.Fatalf("SetGroupMembersArgs failed")
@@ -310,16 +300,6 @@ func TestModelORMMethods(t *testing.T) {
 	lgmList = append(lgmList, lgmArgs)
 	if lgmList.Len() != 1 {
 		t.Fatalf("ListGroupMembersArgsList failed")
-	}
-
-	dgArgs := &chatroom.DeleteGroupArgs{TenantId: "t1", Id: "r1"}
-	if dgArgs.ModelName() == "" || dgArgs.Schema() == nil || len(dgArgs.Pointers()) == 0 || dgArgs.IsNil() {
-		t.Fatalf("DeleteGroupArgs failed")
-	}
-	var dgList chatroom.DeleteGroupArgsList
-	dgList = append(dgList, dgArgs)
-	if dgList.Len() != 1 {
-		t.Fatalf("DeleteGroupArgsList failed")
 	}
 
 	part := &chatroom.Participant{UserId: "u1", Label: "Alice", Online: true}
