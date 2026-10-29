@@ -35,7 +35,7 @@ require (
 	webtyp.com/font v0.0.5 // indirect
 	webtyp.com/form v0.4.52 // indirect
 	webtyp.com/icons v0.0.38 // indirect
-	webtyp.com/json v0.5.36 // indirect
+	webtyp.com/json v0.5.37 // indirect
 	webtyp.com/lang v0.1.10 // indirect
 	webtyp.com/msgtype v0.1.0 // indirect
 	webtyp.com/widget v0.6.45 // indirect
