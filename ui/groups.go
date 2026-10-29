@@ -8,7 +8,7 @@ import (
 )
 
 // textNoGroupsYet is shown by the Miembros section while no group exists.
-const textNoGroupsYet = "Cree un grupo en la sección Grupos."
+const textNoGroupsYet = "Create a group in the Groups section."
 
 
 type membersTab struct {

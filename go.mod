@@ -19,6 +19,7 @@ require (
 	webtyp.com/dom v0.13.29
 	webtyp.com/html v0.0.30
 	webtyp.com/layout v0.3.87
+	webtyp.com/rpc v0.2.10
 	webtyp.com/storage v0.1.8
 	webtyp.com/svg v0.3.30
 	webtyp.com/unixid v0.3.1
@@ -38,6 +39,5 @@ require (
 	webtyp.com/json v0.5.37 // indirect
 	webtyp.com/lang v0.1.10 // indirect
 	webtyp.com/msgtype v0.1.0 // indirect
-	webtyp.com/rpc v0.2.7 // indirect
 	webtyp.com/widget v0.6.45 // indirect
 )

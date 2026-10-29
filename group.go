@@ -1,10 +1,10 @@
 package chatroom
 
 import (
-	"webtyp.com/time"
 	"webtyp.com/events"
 	"webtyp.com/model"
 	"webtyp.com/orm"
+	"webtyp.com/time"
 )
 
 func (m *Module) ListGroups(tenantID string) ([]Room, error) {
@@ -334,11 +334,17 @@ func (m *Module) ListGroupMembers(tenantID, roomID string) ([]Participant, error
 }
 
 func (m *Module) DeleteGroup(tenantID, id string) error {
+	var room Room
+
 	if tenantID == "" {
-		tenantID = m.tenantID
+		err := m.db.Query(&room).Where("id").Eq(id).ReadOne()
+		if err == nil {
+			tenantID = room.TenantId
+		} else {
+			tenantID = m.tenantID
+		}
 	}
 
-	var room Room
 	err := m.db.Query(&room).
 		Where("tenant_id").Eq(tenantID).
 		Where("id").Eq(id).

@@ -28,6 +28,14 @@ err = migrate.Migrate(dbConn, ddlCompiler)
 screens := ui.Screens(caller, idGen, "tenant-id", ui.WithInbox(eventSubscriber, currentUserID))
 ```
 
+
+### Notas de Arquitectura
+
+- Errores implementados usando `rpc.WriteError` en vez de escribir estados directamente.
+- Permisos por tabla definidos usando `model.ResourceOf(&RoomModel)` (antes constante explícita).
+- Operaciones de guardar/borrar implementadas con `view.MountSave` y `view.MountDelete`.
+- Claves foráneas declaradas con la propiedad `Ref` del modelo de ORM para referencias a otras tablas.
+
 ## Tabla de Operaciones
 
 | Operación | Acceso | Descripción |

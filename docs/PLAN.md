@@ -2,8 +2,10 @@
 PLAN: "refactor: module review — errors via rpc.WriteError, resources from tables, screens via view.MountSave, foreign keys, translations"
 EXECUTOR: jules
 REVIEWER: none
-STATUS: running
+STATUS: review
 SESSION: 10294473370192943042
+PR: https://github.com/veltylabs/chat_room/pull/8
+REVIEWED_COMMIT: ab411f56e7f2ddddcfd34bda0e604fb67cb4d8c9
 ---
 
 > Read AGENTS.md at the repo root before any change.
