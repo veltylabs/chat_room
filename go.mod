@@ -19,7 +19,7 @@ require (
 	webtyp.com/dom v0.13.29
 	webtyp.com/html v0.0.30
 	webtyp.com/layout v0.3.95
-	webtyp.com/rpc v0.2.13
+	webtyp.com/rpc v0.2.14
 	webtyp.com/storage v0.1.8
 	webtyp.com/svg v0.3.30
 	webtyp.com/unixid v0.3.1
