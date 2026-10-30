@@ -3,7 +3,7 @@ module github.com/veltylabs/chat_room
 go 1.26.8
 
 require (
-	webtyp.com/ddl v0.0.32
+	webtyp.com/ddl v0.0.36
 	webtyp.com/events v0.0.5
 	webtyp.com/fmt v1.0.0
 	webtyp.com/input v0.0.28
