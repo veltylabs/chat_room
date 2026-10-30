@@ -9,7 +9,7 @@ require (
 	webtyp.com/input v0.0.28
 	webtyp.com/model v0.2.12
 	webtyp.com/orm v0.12.20
-	webtyp.com/router v0.4.12
+	webtyp.com/router v0.4.16
 	webtyp.com/time v0.6.2
 	webtyp.com/view v0.6.53
 )
@@ -18,8 +18,8 @@ require (
 	webtyp.com/components v0.8.57
 	webtyp.com/dom v0.13.29
 	webtyp.com/html v0.0.30
-	webtyp.com/layout v0.3.87
-	webtyp.com/rpc v0.2.10
+	webtyp.com/layout v0.3.95
+	webtyp.com/rpc v0.2.13
 	webtyp.com/storage v0.1.8
 	webtyp.com/svg v0.3.30
 	webtyp.com/unixid v0.3.1
