@@ -2,15 +2,15 @@
 PLAN: "feat: the demo shows its API and its database (layout v0.3.99 developer tools)"
 EXECUTOR: jules
 REVIEWER: none
-STATUS: running
-SESSION: 8677047787088922011
+STATUS: dispatch
 ---
 
 > Read AGENTS.md at the repo root before any change.
 > **Finish by yourself:** when the delivery check passes, commit, push and open the pull request. Never ask whether to
-> proceed or finalize — nobody answers, and a session that waits ends without your work.
+> proceed or finalize — nobody answers, and a session that waits ends without your work. Anything unclear is an entry
+> under "## Executor notes" in that file and in the pull request.
 
-# Developer tools in the demo
+# Developer tools in the demo and translation to Spanish
 
 ## Context
 
@@ -39,24 +39,19 @@ Environment: `GOPRIVATE=webtyp.com/*,github.com/veltylabs/*`, `GOFLAGS=-mod=mod`
 | `app.LocalTools` | `func LocalTools(modules []router.OperationModule, steps ...ddl.Step) (Tools, error)` | `webtyp.com/layout/app` v0.3.99 |
 | `app.BuildMenu` | `func BuildMenu(screens []view.Screen, ids model.IDGenerator, allows func(model.Resource) bool, tools Tools) (Menu, error)` | v0.3.99 |
 | `ddl.Step` | `struct { Name string; Run func(conn Execer, compiler Compiler) error }` | `webtyp.com/ddl` |
-| each `migrate.Migrate` used below | `func Migrate(conn ddl.Execer, ddlCompiler ddl.Compiler) error` — fits `ddl.Step.Run` | each module |
+| `migrate.Migrate` | `func Migrate(conn ddl.Execer, ddlCompiler ddl.Compiler) error` — fits `ddl.Step.Run` | `github.com/veltylabs/chat_room/migrate` |
 
-In this file the layout package is imported as `app`. If a signature differs, stop and name the symbol in
-the PR; never adapt it by guessing.
+In `web/browser.go` and `tests/ui_live_browser_test.go` the layout package is imported as `app`.
 
-## Stage 1 — `web/browser.go`
+## Stage 1 — `web/browser.go` and `tests/ui_live_browser_test.go`
 
-Add the imports (keep the existing ones; use the aliases already in the file for the root packages):
-
+1. In `web/browser.go`, add the imports:
 ```go
 	chatroommigrate "github.com/veltylabs/chat_room/migrate"
 	"webtyp.com/ddl"
 	"webtyp.com/router"
 ```
-
-Right before the existing `app.BuildMenu(...)` call, build the tools from the **same modules the loopback
-caller mounts** and the modules' migration steps, in this order:
-
+Right before the `app.BuildMenu(...)` call, build the tools:
 ```go
 	steps := []ddl.Step{
 		{Name: chatroom.ModelName, Run: chatroommigrate.Migrate},
@@ -66,24 +61,51 @@ caller mounts** and the modules' migration steps, in this order:
 		panic(err)
 	}
 ```
+and pass `tools` as the fourth argument:
+```go
+	menu, err := app.BuildMenu(screens, ids, func(model.Resource) bool { return true }, tools)
+```
 
-and pass `tools` as the fourth argument of the existing `BuildMenu` call (nothing else in that call changes). If `err`
-is already declared in that scope, use `=` where the compiler asks for it.
+2. In `tests/ui_live_browser_test.go`:
+At line 69, update `app.BuildMenu` to pass `app.Tools{}` as the fourth argument:
+```go
+	menu, err := app.BuildMenu(screens, ids, func(model.Resource) bool { return true }, app.Tools{})
+```
 
+3. Check that it compiles for the browser: `GOOS=js GOARCH=wasm go build -o /dev/null ./web`, run `gotest`. Commit.
 
-Check that it compiles for the browser: `GOOS=js GOARCH=wasm go build -o /dev/null ./web`; then run `gotest`.
-Commit.
+## Stage 2 — language, error reuse and docs
 
-## Stage 2 — language
+1. In `module.go`: decompose `New` dependency validation errors to share vocabulary as required by `langc` rule 4:
+```go
+	const depPrefix = "chat_room: Deps."
+	if deps.IDs == nil {
+		return nil, fmt.Err(depPrefix+"IDs", "is required")
+	}
+	if deps.Participants == nil {
+		return nil, fmt.Err(depPrefix+"Participants", "is required")
+	}
+	if deps.TenantID == "" {
+		return nil, fmt.Err(depPrefix+"TenantID", "is required")
+	}
+	if deps.RetentionDays <= 0 {
+		return nil, fmt.Err(depPrefix+"RetentionDays", "must be greater than zero")
+	}
+```
+Run `go run webtyp.com/lang/cmd/langc@latest sync .` to update `lang.json`. Ensure 0 warnings and 0 missing translations.
 
-Translate to Spanish every `README.md`, `docs/*` file, diagram and code comment of this repo that is still in English
-(only those; never rewrite what is already Spanish), and add a usage example (`// Ejemplo: …`) to exported-symbol
-comments that lack one. Code, identifiers and translation keys stay in English. Commit.
+2. In `AGENTS.md:55`: replace `| ddl | CreateTable/Sync |` with `| ddl | Sync |`.
+
+3. Translate to Spanish every `README.md`, `docs/*` file, diagram and code comment of this repo that is still in English (only those; never rewrite what is already Spanish), and add a usage example (`// Ejemplo: …`) to exported-symbol comments that lack one. Code, identifiers and translation keys stay in English.
+
+4. Run `gotest`. Commit.
 
 ## Delivery check
 
-1. `GOOS=js GOARCH=wasm go build -o /dev/null ./web` succeeds and `gotest` passes. A PR that does not compile, or whose tests could not run, is a failed delivery.
-2. `grep -n "LocalTools" web/browser.go` → one match; every `BuildMenu(` call has four arguments.
+1. `GOOS=js GOARCH=wasm go build -o /dev/null ./web` succeeds.
+2. `gotest` passes cleanly (vet, race, tests, browser).
+3. `grep -n "LocalTools" web/browser.go` → one match; every `BuildMenu(` call has four arguments.
+4. Git commit, push and open the pull request.
 
 ## Delivery rules
 
@@ -95,5 +117,5 @@ comments that lack one. Code, identifiers and translation keys stay in English. 
 
 | # | Files | Result |
 |---|---|---|
-| 1 | `web/browser.go`, `go.mod`, `go.sum` | The demo passes its tools; explorer and diagram show its own API and tables |
-| 2 | docs and comments still in English | Spanish |
+| 1 | `web/browser.go`, `tests/ui_live_browser_test.go`, `go.mod`, `go.sum` | The demo passes its tools; tests pass 4th argument |
+| 2 | `module.go`, `lang.json`, `AGENTS.md`, docs and comments in Spanish | Vocabulary shared, docs and comments in Spanish |
