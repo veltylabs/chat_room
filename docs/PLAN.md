@@ -2,7 +2,8 @@
 PLAN: "feat: the demo shows its API and its database (layout v0.3.99 developer tools)"
 EXECUTOR: jules
 REVIEWER: none
-STATUS: dispatch
+STATUS: running
+SESSION: 9944839386845840309
 ---
 
 > Read AGENTS.md at the repo root before any change.
