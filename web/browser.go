@@ -4,8 +4,10 @@ package main
 
 import (
 	chatroom "github.com/veltylabs/chat_room"
+	chatroommigrate "github.com/veltylabs/chat_room/migrate"
 	"github.com/veltylabs/chat_room/seed"
 	"github.com/veltylabs/chat_room/ui"
+	"webtyp.com/ddl"
 	"webtyp.com/dom"
 	"webtyp.com/events/mock"
 	"webtyp.com/fmt"
@@ -13,6 +15,7 @@ import (
 	"webtyp.com/layout/platformd"
 	"webtyp.com/model"
 	"webtyp.com/orm"
+	"webtyp.com/router"
 	"webtyp.com/router/loopback"
 	"webtyp.com/storage/mem"
 	"webtyp.com/time"
@@ -80,7 +83,14 @@ func main() {
 
 	screens := ui.Screens(caller, ids, demoTenantID, ui.WithInbox(broker, "u1"))
 
-	menu, err := app.BuildMenu(screens, ids, func(model.Resource) bool { return true })
+	steps := []ddl.Step{
+		{Name: chatroom.ModelName, Run: chatroommigrate.Migrate},
+	}
+	tools, err := app.LocalTools([]router.OperationModule{mod}, steps...)
+	if err != nil {
+		panic(err)
+	}
+	menu, err := app.BuildMenu(screens, ids, func(model.Resource) bool { return true }, tools)
 	if err != nil {
 		panic(err)
 	}
