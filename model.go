@@ -76,7 +76,7 @@ var IdRefModel = model.Definition{
 	},
 }
 
-// Structs for arguments
+// Estructuras de argumentos (Structs for arguments)
 
 var OpenDirectArgsModel = model.Definition{
 	Name: "open_direct_args",
@@ -151,7 +151,7 @@ var ListGroupMembersArgsModel = model.Definition{
 	},
 }
 
-// Output / Result Definitions
+// Definiciones de salida / resultado (Output / Result Definitions)
 
 var ParticipantModel = model.Definition{
 	Name: "participant",
@@ -198,7 +198,7 @@ var MessageSentEventModel = model.Definition{
 	},
 }
 
-// Errors (exact text)
+// Errores (texto exacto) (Errors (exact text))
 const (
 	ErrNotFound        model.NotFound = "chat_room: not found"
 	ErrTenantRequired  model.Invalid  = "chat_room: tenant_id is required"
@@ -212,7 +212,7 @@ const (
 	ErrCannotRead      model.Invalid  = "chat_room: cannot read the request"
 )
 
-// Events & Topics
+// Eventos y Tópicos (Events & Topics)
 const (
 	TopicMessageSent = "chat_room.message.sent" // payload MessageSentEvent: tenant_id, room_id, message_id, sender_id — NUNCA el body
 	TopicGroupSaved  = "chat_room.group.saved"  // payload: la fila chat_room

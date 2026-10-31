@@ -7,7 +7,7 @@ import (
 	"webtyp.com/router"
 )
 
-// textNoGroupsYet is shown by the Miembros section while no group exists.
+// textNoGroupsYet es mostrado por la sección Miembros cuando no existe ningún grupo (textNoGroupsYet is shown by the Miembros section while no group exists).
 const textNoGroupsYet = "Create a group in the Groups section."
 
 

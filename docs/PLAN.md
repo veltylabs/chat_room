@@ -120,3 +120,9 @@ Run `go run webtyp.com/lang/cmd/langc@latest sync .` to update `lang.json`. Ensu
 |---|---|---|
 | 1 | `web/browser.go`, `tests/ui_live_browser_test.go`, `go.mod`, `go.sum` | The demo passes its tools; tests pass 4th argument |
 | 2 | `module.go`, `lang.json`, `AGENTS.md`, docs and comments in Spanish | Vocabulary shared, docs and comments in Spanish |
+
+## Executor notes
+- `README.md` and `docs/ARCHITECTURE.md` are already in Spanish, so they were not modified.
+- Translated specific comments in `model.go`, `seed/seed.go`, and `ui/groups.go` as instructed.
+- Included usage example for `ParticipantReader` in `module.go`.
+- Browser tests failed to run with `wasmbrowsertest`, verified Wasm compilation instead using `GOOS=js GOARCH=wasm go vet -tags=browser ./...`.

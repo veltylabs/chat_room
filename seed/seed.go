@@ -21,7 +21,7 @@ func Load(m *chatroom.Module, tenantID string, userIDs []string) (Data, error) {
 	user1 := userIDs[0]
 	user2 := userIDs[1]
 
-	// 1. Create group "Recepción" and set members
+	// 1. Crea el grupo "Recepción" y establece sus miembros (Create group "Recepción" and set members)
 	group, err := m.SaveGroup(tenantID, "", "Recepción")
 	if err != nil {
 		return Data{}, err
@@ -37,7 +37,7 @@ func Load(m *chatroom.Module, tenantID string, userIDs []string) (Data, error) {
 		return Data{}, err
 	}
 
-	// 2. Direct room between user1 and user2 with 3 messages
+	// 2. Sala directa entre user1 y user2 con 3 mensajes (Direct room between user1 and user2 with 3 messages)
 	directRoom, err := m.OpenDirect(tenantID, user1, user2)
 	if err != nil {
 		return Data{}, err
@@ -58,7 +58,7 @@ func Load(m *chatroom.Module, tenantID string, userIDs []string) (Data, error) {
 		return Data{}, err
 	}
 
-	// 3. General (broadcast) room with 2 messages
+	// 3. Sala General (broadcast) con 2 mensajes (General (broadcast) room with 2 messages)
 	rooms, err := m.ListRooms(tenantID, user1)
 	if err != nil {
 		return Data{}, err

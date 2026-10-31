@@ -9,6 +9,7 @@ import (
 )
 
 // ParticipantReader: los usuarios que pueden chatear. Key = user_id, Value = nombre visible.
+// Ejemplo: type participants struct{}; func (p participants) ParticipantOptions(tenantID string) ([]fmt.KeyValue, error) { return nil, nil }
 type ParticipantReader interface {
 	ParticipantOptions(tenantID string) ([]fmt.KeyValue, error)
 }
@@ -33,17 +34,18 @@ type Module struct {
 }
 
 func New(db *orm.DB, deps Deps) (*Module, error) {
+	const depPrefix = "chat_room: Deps."
 	if deps.IDs == nil {
-		return nil, fmt.Err("chat_room: Deps.IDs is required")
+		return nil, fmt.Err(depPrefix+"IDs", "is required")
 	}
 	if deps.Participants == nil {
-		return nil, fmt.Err("chat_room: Deps.Participants is required")
+		return nil, fmt.Err(depPrefix+"Participants", "is required")
 	}
 	if deps.TenantID == "" {
-		return nil, fmt.Err("chat_room: Deps.TenantID is required")
+		return nil, fmt.Err(depPrefix+"TenantID", "is required")
 	}
 	if deps.RetentionDays <= 0 {
-		return nil, fmt.Err("chat_room: Deps.RetentionDays must be greater than zero")
+		return nil, fmt.Err(depPrefix+"RetentionDays", "must be greater than zero")
 	}
 
 	return &Module{
