@@ -2,8 +2,10 @@
 PLAN: "feat: the demo shows its API and its database (layout v0.3.99 developer tools)"
 EXECUTOR: jules
 REVIEWER: none
-STATUS: running
+STATUS: review
 SESSION: 9944839386845840309
+PR: https://github.com/veltylabs/chat_room/pull/9
+REVIEWED_COMMIT: 0cb4e3d1e52bbed38e312aeaf53aad35b21de8aa
 ---
 
 > Read AGENTS.md at the repo root before any change.
