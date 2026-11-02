@@ -15,20 +15,14 @@
     "You have no direct messages yet.": ["Aún no tienes mensajes directos con nadie.", "您还没有任何直接消息。", "आपके पास अभी तक कोई सीधा संदेश नहीं है।", "ليس لديك رسائل مباشرة بعد.", "Você ainda não tem mensagens diretas.", "Vous n'avez pas encore de messages directs.", "Sie haben noch keine Direktnachrichten.", "У вас пока нет личных сообщений."],
     "after id": ["después del id", "id 之后", "id के बाद", "بعد المعرف", "após id", "après l'id", "nach id", "после id"],
     "body": ["cuerpo", "正文", "शरीर", "الجسم", "corpo", "corps", "Textkörper", "тело"],
-    "created at": ["creado en", "创建于", "पर बनाया गया", "أنشئت في", "criado em", "créé le", "erstellt am", "создано в"],
     "direct key": ["clave directa", "直接键", "प्रत्यक्ष कुंजी", "مفتاح مباشر", "chave direta", "clé directe", "direkter Schlüssel", "прямой ключ"],
-    "is required": ["es obligatorio", "需要", "आवश्यक है", "مطلوب", "é obrigatório", "est requis", "ist erforderlich", "требуется"],
-    "kind": ["tipo", "种类", "प्रकार", "نوع", "tipo", "sorte", "Art", "вид"],
-    "label": ["etiqueta", "标签", "लेबल", "ملصق", "rótulo", "étiquette", "Etikett", "метка"],
     "last message at": ["último mensaje en", "最后消息时间", "अंतिम संदेश", "آخر رسالة في", "última mensagem em", "dernier message à", "letzte Nachricht am", "последнее сообщение в"],
     "last preview": ["última vista previa", "最后预览", "अंतिम पूर्वावलोकन", "آخر معاينة", "última visualização", "dernier aperçu", "letzte Vorschau", "последний предварительный просмотр"],
     "last read at": ["última vez leído en", "最后阅读时间", "अंतिम बार पढ़ा गया", "آخر قراءة في", "lida pela última vez em", "dernière lecture à", "zuletzt gelesen am", "последний раз прочитано в"],
     "last seen": ["visto por última vez", "最后上线", "अंतिम बार देखा गया", "شوهد آخر مرة", "visto pela última vez", "vu pour la dernière fois", "zuletzt gesehen", "был в сети"],
-    "limit": ["límite", "限制", "सीमा", "حد", "limite", "limite", "Grenze", "предел"],
     "message id": ["id de mensaje", "消息 id", "संदेश id", "معرف الرسالة", "id da mensagem", "id du message", "Nachrichten-id", "id сообщения"],
     "mine": ["mío", "我的", "मेरा", "لي", "meu", "mien", "mein", "мой"],
     "must be greater than zero": ["debe ser mayor que cero", "必须大于零", "शून्य से अधिक होना चाहिए", "يجب أن يكون أكبر من الصفر", "deve ser maior que zero", "doit être supérieur à zéro", "muss größer als Null sein", "должен быть больше нуля"],
-    "name": ["nombre", "名字", "नाम", "اسم", "nome", "nom", "Name", "имя"],
     "online": ["en línea", "在线", "ऑनलाइन", "متصل", "online", "en ligne", "online", "в сети"],
     "other user id": ["otro @user id@", "其他 @user id@", "अन्य @user id@", "آخر @user id@", "outro @user id@", "autre @user id@", "andere @user id@", "другой @user id@"],
     "read": ["leído", "已读", "पढ़ें", "قرأ", "lido", "lire", "lesen", "читать"],
@@ -36,11 +30,8 @@
     "seed: at least 2 user IDs required": ["seed: se requieren al menos 2 IDs de usuario", "seed：至少需要 2 个用户 ID", "seed: कम से कम 2 उपयोगकर्ता ID आवश्यक हैं", "seed: مطلوب معرفي مستخدمين على الأقل", "seed: são necessários pelo menos 2 IDs de usuário", "seed : au moins 2 identifiants d'utilisateur requis", "seed: mindestens 2 Benutzer-IDs erforderlich", "seed: требуется как минимум 2 идентификатора пользователя"],
     "sender id": ["id de remitente", "发送者 id", "प्रेषक id", "معرف المرسل", "id do remetente", "id de l'expéditeur", "Absender-id", "id отправителя"],
     "sender label": ["etiqueta de remitente", "发送者标签", "प्रेषक लेबल", "تسمية المرسل", "rótulo do remetente", "étiquette de l'expéditeur", "Absenderetikett", "метка отправителя"],
-    "tenant id": ["id de inquilino", "租户 id", "किरायेदार id", "معرف المستأجر", "id do inquilino", "id du locataire", "Mieter-id", "id арендатора"],
     "title": ["título", "标题", "शीर्षक", "عنوان", "título", "titre", "Titel", "название"],
     "unread": ["no leído", "未读", "अपठित", "غير مقروء", "não lido", "non lu", "ungelesen", "непрочитанный"],
-    "updated at": ["actualizado en", "更新于", "पर अद्यतन", "تم التحديث في", "atualizado em", "mis à jour à", "aktualisiert am", "обновлено в"],
-    "user id": ["id de usuario", "用户 id", "उपयोगकर्ता id", "معرف المستخدم", "id do usuário", "id de l'utilisateur", "Benutzer-id", "id пользователя"],
-    "user ids": ["@user id@s", "@user id@s", "@user id@s", "@user id@s", "@user id@s", "@user id@s", "@user id@s", "@user id@s"]
+    "user ids": ["@user id@s", "", "", "", "", "", "", ""]
   }
 }
