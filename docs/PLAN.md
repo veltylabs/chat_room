@@ -2,6 +2,8 @@
 PLAN: "feat!: message times on the installation clock (BrowserDeps.Zone)"
 EXECUTOR: jules
 REVIEWER: none
+STATUS: running
+SESSION: 3779496348622133644
 ---
 
 > Read AGENTS.md at the repo root before any change.
