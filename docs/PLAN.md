@@ -2,8 +2,10 @@
 PLAN: "feat!: message times on the installation clock (BrowserDeps.Zone)"
 EXECUTOR: jules
 REVIEWER: none
-STATUS: running
+STATUS: review
 SESSION: 3779496348622133644
+PR: https://github.com/veltylabs/chat_room/pull/10
+REVIEWED_COMMIT: 8d0869e154b6490c73f8976e0aa54afaae141929
 ---
 
 > Read AGENTS.md at the repo root before any change.
