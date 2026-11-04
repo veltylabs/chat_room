@@ -7,11 +7,12 @@ import (
 	"webtyp.com/layout/crudview"
 	"webtyp.com/model"
 	"webtyp.com/router"
+	"webtyp.com/time"
 	"webtyp.com/view"
 )
 
-func Screens(caller router.Caller, ids model.IDGenerator, tenantID string, opts ...Option) []view.Screen {
-	chatComp, _ := NewChatComponent(caller, tenantID, opts...)
+func Screens(caller router.Caller, zone time.Zone, ids model.IDGenerator, tenantID string, opts ...Option) []view.Screen {
+	chatComp, _ := NewChatComponent(caller, zone, tenantID, opts...)
 
 	crudView, _ := crudview.New(crudview.Config{
 		ParentID:  GroupsID + ".list",

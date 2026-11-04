@@ -81,7 +81,8 @@ func main() {
 
 	caller := loopback.ActingAs(demoTenantID, "u1", mod)
 
-	screens := ui.Screens(caller, ids, demoTenantID, ui.WithInbox(broker, "u1"))
+	zone, _ := time.LoadZone("America/Santiago")
+	screens := ui.Screens(caller, zone, ids, demoTenantID, ui.WithInbox(broker, "u1"))
 
 	steps := []ddl.Step{
 		{Name: chatroom.ModelName, Run: chatroommigrate.Migrate},

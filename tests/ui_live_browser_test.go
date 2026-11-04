@@ -65,7 +65,8 @@ func TestChatScreenLiveWasm(t *testing.T) {
 
 	caller := loopback.ActingAs(tenant, "u1", mod)
 
-	screens := ui.Screens(caller, ids, tenant, ui.WithInbox(broker, "u1"))
+	zone, _ := time.LoadZone("America/Santiago")
+	screens := ui.Screens(caller, zone, ids, tenant, ui.WithInbox(broker, "u1"))
 	menu, err := app.BuildMenu(screens, ids, func(model.Resource) bool { return true }, app.Tools{})
 	if err != nil {
 		t.Fatalf("app.BuildMenu failed: %v", err)

@@ -34,7 +34,7 @@ func WithInbox(sub events.Subscriber, userID string) Option {
 	}
 }
 
-func NewChatComponent(caller router.Caller, tenantID string, opts ...Option) (dom.Component, error) {
+func NewChatComponent(caller router.Caller, zone time.Zone, tenantID string, opts ...Option) (dom.Component, error) {
 	o := &options{
 		label: DefaultLabel,
 	}
@@ -43,7 +43,7 @@ func NewChatComponent(caller router.Caller, tenantID string, opts ...Option) (do
 	}
 
 	v, err := chatview.New(chatview.Config{
-		Source:        &source{caller: caller, tenantID: tenantID},
+		Source:        &source{caller: caller, zone: zone, tenantID: tenantID},
 		MaxBodyLength: chatroom.MaxBodyLength,
 	})
 	if err != nil {

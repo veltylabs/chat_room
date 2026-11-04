@@ -80,3 +80,5 @@ caller := loopback.ActingAs(tenantID, currentUserID, mod)
 // Menú y pantallas
 screens := ui.Screens(caller, ids, tenantID, ui.WithInbox(subscriber, currentUserID))
 ```
+
+Las fechas que ve una persona salen de la zona de la instalación (`Deps.Zone` / `BrowserDeps.Zone`); un día guardado como clave usa las funciones UTC.
