@@ -12,6 +12,7 @@ import (
 
 type source struct {
 	caller   router.Caller
+	zone     time.Zone
 	tenantID string
 }
 
@@ -32,7 +33,7 @@ func (s *source) Rooms(done func(rows []inboxlist.Row, err error)) {
 				ID:      sum.RoomId,
 				Title:   sum.Title,
 				Preview: sum.LastPreview,
-				Time:    shortTime(sum.LastMessageAt),
+				Time:    s.shortTime(sum.LastMessageAt),
 				Unread:  int(sum.Unread),
 			}
 		}
@@ -55,7 +56,7 @@ func (s *source) Messages(roomID string, done func(bubbles []bubblethread.Bubble
 				ID:     msg.Id,
 				Author: msg.SenderLabel,
 				Body:   msg.Body,
-				Time:   clock(msg.CreatedAt),
+				Time:   s.clock(msg.CreatedAt),
 				Mine:   msg.Mine,
 				Read:   msg.Read,
 			}
@@ -76,7 +77,7 @@ func (s *source) Send(roomID, body string, done func(sent bubblethread.Bubble, e
 			ID:     sent.Id,
 			Author: sent.SenderLabel,
 			Body:   sent.Body,
-			Time:   clock(sent.CreatedAt),
+			Time:   s.clock(sent.CreatedAt),
 			Mine:   sent.Mine,
 			Read:   sent.Read,
 		}
@@ -122,23 +123,19 @@ func (s *source) OpenDirect(personID string, done func(roomID string, err error)
 	})
 }
 
-func clock(ns time.Nano) string {
+func (s *source) clock(ns time.Nano) string {
 	if ns == 0 {
 		return ""
 	}
-	t := time.FormatTime(ns.Unix())
-	if len(t) >= 5 {
-		return t[:5]
-	}
-	return t
+	return s.zone.Clock(ns.Unix())
 }
 
-func shortTime(ns time.Nano) string {
+func (s *source) shortTime(ns time.Nano) string {
 	if ns == 0 {
 		return ""
 	}
-	if time.IsToday(ns.Unix()) {
-		return clock(ns)
+	if s.zone.IsToday(ns.Unix()) {
+		return s.clock(ns)
 	}
-	return time.FormatDate(ns.Unix())
+	return s.zone.Date(ns.Unix())
 }
