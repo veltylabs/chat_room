@@ -11,14 +11,14 @@ require (
 	webtyp.com/orm v0.12.26
 	webtyp.com/router v0.4.17
 	webtyp.com/time v0.6.4
-	webtyp.com/view v0.6.53
+	webtyp.com/view v0.6.65
 )
 
 require (
-	webtyp.com/components v0.8.57
+	webtyp.com/components v0.8.63
 	webtyp.com/dom v0.13.29
 	webtyp.com/html v0.0.30
-	webtyp.com/layout v0.3.99
+	webtyp.com/layout v0.3.108
 	webtyp.com/rpc v0.2.15
 	webtyp.com/storage v0.1.18
 	webtyp.com/svg v0.3.33
