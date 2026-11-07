@@ -56,7 +56,7 @@ func (m *Module) MountOperations(reg router.OperationRegistry) {
 
 	reg.Operation(OpListGroups, m.handleListGroups).
 		Requires(model.ResourceOf(&RoomModel), model.Read).
-		Accepts(&ListGroupsArgs{})
+		Accepts(&view.ListArgs{})
 
 	view.MountSave(reg, OpSaveGroup, func(r *Room) error { out, err := m.SaveGroup(r.TenantId, r.Id, r.Name); *r = out; return err }).Requires(model.ResourceOf(&RoomModel), model.Create|model.Update)
 
@@ -246,17 +246,13 @@ func (m *Module) handleMarkRead(ctx router.Context) {
 }
 
 func (m *Module) handleListGroups(ctx router.Context) {
-	var args ListGroupsArgs
+	var args view.ListArgs
 	if err := ctx.Decode(&args); err != nil {
 		rpc.WriteError(ctx, ErrCannotRead)
 		return
 	}
-	if err := args.Validate(model.ActionRead); err != nil {
-		rpc.WriteError(ctx, err)
-		return
-	}
 
-	groups, err := m.ListGroups(args.TenantId)
+	groups, err := m.ListGroups(args.Search, args.After, view.Cap(args.Limit))
 	if err != nil {
 		rpc.WriteError(ctx, err)
 		return

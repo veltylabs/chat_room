@@ -107,7 +107,7 @@ func TestAllOpsAndViews(t *testing.T) {
 	}
 
 	// ListGroups Op
-	ctx = &mock.Context{InBody: []byte(`{"tenant_id":"t1"}`)}
+	ctx = &mock.Context{InBody: []byte(`{}`)}
 	ctx.SetUserID("u1")
 	r.Invoke("OP", "/"+chatroom.OpListGroups, ctx)
 	if ctx.Status != 200 && ctx.Status != 0 {
@@ -270,16 +270,6 @@ func TestModelORMMethods(t *testing.T) {
 	hbList = append(hbList, hbArgs)
 	if hbList.Len() != 1 {
 		t.Fatalf("HeartbeatArgsList failed")
-	}
-
-	lgArgs := &chatroom.ListGroupsArgs{TenantId: "t1"}
-	if lgArgs.ModelName() == "" || lgArgs.Schema() == nil || len(lgArgs.Pointers()) == 0 || lgArgs.IsNil() {
-		t.Fatalf("ListGroupsArgs failed")
-	}
-	var lgList chatroom.ListGroupsArgsList
-	lgList = append(lgList, lgArgs)
-	if lgList.Len() != 1 {
-		t.Fatalf("ListGroupsArgsList failed")
 	}
 
 	sgmArgs := &chatroom.SetGroupMembersArgs{TenantId: "t1", RoomId: "r1"}

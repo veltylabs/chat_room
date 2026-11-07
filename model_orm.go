@@ -171,7 +171,7 @@ func ReadAllMember(qb *orm.QB) (MemberList, error) {
 
 func (m *Member) SchemaExt() []model.FieldExt {
 	return []model.FieldExt{
-		{Field: MemberModel.Fields[1], Ref: "room", RefColumn: "id", OnDelete: ""},
+		{Field: MemberModel.Fields[1], Ref: "chat_room", RefColumn: "id", OnDelete: ""},
 	}
 }
 
@@ -263,7 +263,7 @@ func ReadAllMessage(qb *orm.QB) (MessageList, error) {
 
 func (m *Message) SchemaExt() []model.FieldExt {
 	return []model.FieldExt{
-		{Field: MessageModel.Fields[2], Ref: "room", RefColumn: "id", OnDelete: ""},
+		{Field: MessageModel.Fields[2], Ref: "chat_room", RefColumn: "id", OnDelete: ""},
 	}
 }
 
@@ -508,7 +508,7 @@ func ReadAllListMessagesArgs(qb *orm.QB) (ListMessagesArgsList, error) {
 
 func (m *ListMessagesArgs) SchemaExt() []model.FieldExt {
 	return []model.FieldExt{
-		{Field: ListMessagesArgsModel.Fields[1], Ref: "room", RefColumn: "id", OnDelete: ""},
+		{Field: ListMessagesArgsModel.Fields[1], Ref: "chat_room", RefColumn: "id", OnDelete: ""},
 	}
 }
 
@@ -580,7 +580,7 @@ func ReadAllSendMessageArgs(qb *orm.QB) (SendMessageArgsList, error) {
 
 func (m *SendMessageArgs) SchemaExt() []model.FieldExt {
 	return []model.FieldExt{
-		{Field: SendMessageArgsModel.Fields[1], Ref: "room", RefColumn: "id", OnDelete: ""},
+		{Field: SendMessageArgsModel.Fields[1], Ref: "chat_room", RefColumn: "id", OnDelete: ""},
 	}
 }
 
@@ -647,7 +647,7 @@ func ReadAllMarkReadArgs(qb *orm.QB) (MarkReadArgsList, error) {
 
 func (m *MarkReadArgs) SchemaExt() []model.FieldExt {
 	return []model.FieldExt{
-		{Field: MarkReadArgsModel.Fields[1], Ref: "room", RefColumn: "id", OnDelete: ""},
+		{Field: MarkReadArgsModel.Fields[1], Ref: "chat_room", RefColumn: "id", OnDelete: ""},
 	}
 }
 
@@ -681,39 +681,6 @@ func (s *HeartbeatArgsList) EncodeFields(_ model.FieldWriter) {}
 func (s *HeartbeatArgsList) DecodeFields(_ model.FieldReader) {}
 
 func (m *HeartbeatArgs) Validate(action byte) error {
-	return model.ValidateFields(action, m)
-}
-
-type ListGroupsArgs struct {
-	TenantId string
-}
-
-func (m *ListGroupsArgs) ModelName() string { return "list_groups_args" }
-
-func (m *ListGroupsArgs) Schema() []model.Field { return ListGroupsArgsModel.Fields }
-
-func (m *ListGroupsArgs) Pointers() []any { return []any{&m.TenantId} }
-
-func (m *ListGroupsArgs) IsNil() bool { return m == nil }
-
-func (m *ListGroupsArgs) EncodeFields(w model.FieldWriter) {
-	w.String("tenant_id", m.TenantId)
-}
-
-func (m *ListGroupsArgs) DecodeFields(r model.FieldReader) {
-	if v, ok := r.String("tenant_id"); ok { m.TenantId = v }
-}
-
-type ListGroupsArgsList []*ListGroupsArgs
-
-func (s *ListGroupsArgsList) Len() int             { return len(*s) }
-func (s *ListGroupsArgsList) At(i int) model.Fielder { return (*s)[i] }
-func (s *ListGroupsArgsList) Append() model.Fielder  { v := &ListGroupsArgs{}; *s = append(*s, v); return v }
-func (s *ListGroupsArgsList) IsNil() bool          { return s == nil }
-func (s *ListGroupsArgsList) EncodeFields(_ model.FieldWriter) {}
-func (s *ListGroupsArgsList) DecodeFields(_ model.FieldReader) {}
-
-func (m *ListGroupsArgs) Validate(action byte) error {
 	return model.ValidateFields(action, m)
 }
 
@@ -796,7 +763,7 @@ func ReadAllSetGroupMembersArgs(qb *orm.QB) (SetGroupMembersArgsList, error) {
 
 func (m *SetGroupMembersArgs) SchemaExt() []model.FieldExt {
 	return []model.FieldExt{
-		{Field: SetGroupMembersArgsModel.Fields[1], Ref: "room", RefColumn: "id", OnDelete: ""},
+		{Field: SetGroupMembersArgsModel.Fields[1], Ref: "chat_room", RefColumn: "id", OnDelete: ""},
 	}
 }
 
@@ -863,7 +830,7 @@ func ReadAllListGroupMembersArgs(qb *orm.QB) (ListGroupMembersArgsList, error) {
 
 func (m *ListGroupMembersArgs) SchemaExt() []model.FieldExt {
 	return []model.FieldExt{
-		{Field: ListGroupMembersArgsModel.Fields[1], Ref: "room", RefColumn: "id", OnDelete: ""},
+		{Field: ListGroupMembersArgsModel.Fields[1], Ref: "chat_room", RefColumn: "id", OnDelete: ""},
 	}
 }
 
@@ -989,7 +956,7 @@ func ReadAllRoomSummary(qb *orm.QB) (RoomSummaryList, error) {
 
 func (m *RoomSummary) SchemaExt() []model.FieldExt {
 	return []model.FieldExt{
-		{Field: RoomSummaryModel.Fields[0], Ref: "room", RefColumn: "id", OnDelete: ""},
+		{Field: RoomSummaryModel.Fields[0], Ref: "chat_room", RefColumn: "id", OnDelete: ""},
 	}
 }
 
@@ -1086,7 +1053,7 @@ func ReadAllMessageView(qb *orm.QB) (MessageViewList, error) {
 
 func (m *MessageView) SchemaExt() []model.FieldExt {
 	return []model.FieldExt{
-		{Field: MessageViewModel.Fields[1], Ref: "room", RefColumn: "id", OnDelete: ""},
+		{Field: MessageViewModel.Fields[1], Ref: "chat_room", RefColumn: "id", OnDelete: ""},
 	}
 }
 
@@ -1163,6 +1130,6 @@ func ReadAllMessageSentEvent(qb *orm.QB) (MessageSentEventList, error) {
 
 func (m *MessageSentEvent) SchemaExt() []model.FieldExt {
 	return []model.FieldExt{
-		{Field: MessageSentEventModel.Fields[1], Ref: "room", RefColumn: "id", OnDelete: ""},
+		{Field: MessageSentEventModel.Fields[1], Ref: "chat_room", RefColumn: "id", OnDelete: ""},
 	}
 }

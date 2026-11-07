@@ -13,6 +13,7 @@ func NewGroupView(caller router.Caller) view.Presenter {
 		List:   OpListGroups,
 		Save:   OpSaveGroup,
 		Delete: OpDeleteGroup,
+		Page:   view.Page{First: view.All},
 	}
 	lister := view.NewCallerLister(view.NewRecords().Caller(caller), ops, func() model.ModelSlice {
 		return &RoomList{}

@@ -7,18 +7,26 @@ import (
 	"webtyp.com/time"
 )
 
-func (m *Module) ListGroups(tenantID string) ([]Room, error) {
-	if tenantID == "" {
-		tenantID = m.tenantID
-	}
+func (m *Module) ListGroups(search, after string, limit int64) ([]Room, error) {
+	tenantID := m.tenantID
 
 	var groups []Room
-	err := m.db.Query(&Room{}).
+	qb := m.db.Query(&Room{}).
 		Where("tenant_id").Eq(tenantID).
-		Where("kind").Eq(KindGroup).
-		ReadAll(func() model.Model { return &Room{} }, func(m model.Model) {
-			groups = append(groups, *m.(*Room))
-		})
+		Where("kind").Eq(KindGroup)
+
+	if search != "" {
+		qb = qb.Where("name").Like("%" + search + "%")
+	}
+	if after != "" {
+		qb = qb.Where("id").Gt(after)
+	}
+
+	qb = qb.OrderBy("id").Asc().Limit(int(limit))
+
+	err := qb.ReadAll(func() model.Model { return &Room{} }, func(m model.Model) {
+		groups = append(groups, *m.(*Room))
+	})
 	if err != nil {
 		return nil, err
 	}
