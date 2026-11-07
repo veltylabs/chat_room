@@ -5,6 +5,7 @@ import (
 	"webtyp.com/dom"
 	"webtyp.com/html"
 	"webtyp.com/router"
+	"webtyp.com/view"
 )
 
 // textNoGroupsYet es mostrado por la sección Miembros cuando no existe ningún grupo (textNoGroupsYet is shown by the Miembros section while no group exists).
@@ -51,7 +52,7 @@ func newMembersTab(caller router.Caller, tenantID string) *membersTab {
 
 func (t *membersTab) Init(ctx dom.Ctx) {
 	var resGroups chatroom.RoomList
-	t.caller.Call(chatroom.ModelName+"."+chatroom.OpListGroups, &chatroom.ListGroupsArgs{TenantId: t.tenantID}, &resGroups, func(err error) {
+	t.caller.Call(chatroom.ModelName+"."+chatroom.OpListGroups, &view.ListArgs{Limit: view.All}, &resGroups, func(err error) {
 		if err != nil {
 			t.msg.Set(err.Error())
 			return

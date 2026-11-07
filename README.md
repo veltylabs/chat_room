@@ -31,6 +31,7 @@ screens := ui.Screens(caller, idGen, "tenant-id", ui.WithInbox(eventSubscriber, 
 
 ### Notas de Arquitectura
 
+- Las listas se cargan según declara `view.Page` y se buscan en el servidor.
 - Errores implementados usando `rpc.WriteError` en vez de escribir estados directamente.
 - Permisos por tabla definidos usando `model.ResourceOf(&RoomModel)` (antes constante explícita).
 - Operaciones de guardar/borrar implementadas con `view.MountSave` y `view.MountDelete`.

@@ -127,13 +127,6 @@ var HeartbeatArgsModel = model.Definition{
 	},
 }
 
-var ListGroupsArgsModel = model.Definition{
-	Name: "list_groups_args",
-	Fields: model.Fields{
-		{Name: "tenant_id", Type: model.Text()},
-	},
-}
-
 var SetGroupMembersArgsModel = model.Definition{
 	Name: "set_group_members_args",
 	Fields: model.Fields{
