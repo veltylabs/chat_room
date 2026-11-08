@@ -2,7 +2,8 @@
 PLAN: "refactor!: chat_room on the closed crud contract — caller user id, server tenant, transactional batch, seed.Demo"
 EXECUTOR: jules
 REVIEWER: none
-STATUS: dispatch
+STATUS: running
+SESSION: 3537549759903273845
 ---
 
 > Read AGENTS.md at the repo root before any change.
