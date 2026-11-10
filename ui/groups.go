@@ -2,15 +2,15 @@ package ui
 
 import (
 	chatroom "github.com/veltylabs/chat_room"
+	"webtyp.com/crud"
 	"webtyp.com/dom"
 	"webtyp.com/html"
+	"webtyp.com/model"
 	"webtyp.com/router"
-	"webtyp.com/view"
 )
 
 // textNoGroupsYet es mostrado por la sección Miembros cuando no existe ningún grupo (textNoGroupsYet is shown by the Miembros section while no group exists).
 const textNoGroupsYet = "Create a group in the Groups section."
-
 
 type membersTab struct {
 	dom.Element
@@ -52,43 +52,53 @@ func newMembersTab(caller router.Caller, tenantID string) *membersTab {
 
 func (t *membersTab) Init(ctx dom.Ctx) {
 	var resGroups chatroom.RoomList
-	t.caller.Call(chatroom.ModelName+"."+chatroom.OpListGroups, &view.ListArgs{Limit: view.All}, &resGroups, func(err error) {
-		if err != nil {
-			t.msg.Set(err.Error())
-			return
-		}
-
-		if resGroups.Len() == 0 {
-			t.boxes.Set([]*dom.Element{dom.NewElement("div").Text(textNoGroupsYet)})
-			return
-		}
-
-		var optNodes []*dom.Element
-		for i := 0; i < resGroups.Len(); i++ {
-			g := resGroups.At(i).(*chatroom.Room)
-			opt := html.Option(g.Id, g.Name)
-			if i == 0 {
-				t.groupSel.Set(g.Id)
-				opt.Attr("selected", "selected")
-			}
-			optNodes = append(optNodes, opt)
-		}
-		t.groupOpts.Set(optNodes)
-
-		var resCandidates chatroom.ParticipantList
-		t.caller.Call(chatroom.ModelName+"."+chatroom.OpListGroupCandidates, &chatroom.ListRoomsArgs{TenantId: t.tenantID}, &resCandidates, func(err error) {
+	t.caller.Call(
+		router.Operation{Module: chatroom.ModelName, Entity: "chat_room", Action: model.Read},
+		&crud.ReadArgs{Filter: &chatroom.Room{Kind: chatroom.KindGroup}},
+		&resGroups,
+		func(err error) {
 			if err != nil {
 				t.msg.Set(err.Error())
 				return
 			}
-			t.people = make([]chatroom.Participant, resCandidates.Len())
-			for i := 0; i < resCandidates.Len(); i++ {
-				p := resCandidates.At(i).(*chatroom.Participant)
-				t.people[i] = *p
+
+			if resGroups.Len() == 0 {
+				t.boxes.Set([]*dom.Element{dom.NewElement("div").Text(textNoGroupsYet)})
+				return
 			}
-			t.loadMembers()
-		})
-	})
+
+			var optNodes []*dom.Element
+			for i := 0; i < resGroups.Len(); i++ {
+				g := resGroups.At(i).(*chatroom.Room)
+				opt := html.Option(g.Id, g.Name)
+				if i == 0 {
+					t.groupSel.Set(g.Id)
+					opt.Attr("selected", "selected")
+				}
+				optNodes = append(optNodes, opt)
+			}
+			t.groupOpts.Set(optNodes)
+
+			var resCandidates chatroom.ParticipantList
+			t.caller.Call(
+				router.Operation{Module: chatroom.ModelName, Entity: "participant", Action: model.Read},
+				&crud.ReadArgs{},
+				&resCandidates,
+				func(err error) {
+					if err != nil {
+						t.msg.Set(err.Error())
+						return
+					}
+					t.people = make([]chatroom.Participant, resCandidates.Len())
+					for i := 0; i < resCandidates.Len(); i++ {
+						p := resCandidates.At(i).(*chatroom.Participant)
+						t.people[i] = *p
+					}
+					t.loadMembers()
+				},
+			)
+		},
+	)
 }
 
 func (t *membersTab) loadMembers() {
@@ -98,40 +108,45 @@ func (t *membersTab) loadMembers() {
 		return
 	}
 
-	var resMembers chatroom.ParticipantList
-	t.caller.Call(chatroom.ModelName+"."+chatroom.OpListGroupMembers, &chatroom.ListGroupMembersArgs{TenantId: t.tenantID, RoomId: groupID}, &resMembers, func(err error) {
-		if err != nil {
-			t.msg.Set(err.Error())
-			return
-		}
-
-		t.on = make([]string, resMembers.Len())
-		for i := 0; i < resMembers.Len(); i++ {
-			p := resMembers.At(i).(*chatroom.Participant)
-			t.on[i] = p.UserId
-		}
-
-		var boxNodes []*dom.Element
-		for _, p := range t.people {
-			pID := p.UserId
-			chk := html.Input("checkbox").Attr("data-user-id", pID)
-			if containsStr(t.on, pID) {
-				chk.Attr("checked", "checked")
+	var resMembers chatroom.MemberList
+	t.caller.Call(
+		router.Operation{Module: chatroom.ModelName, Entity: "chat_member", Action: model.Read},
+		&crud.ReadArgs{Filter: &chatroom.Member{RoomId: groupID}},
+		&resMembers,
+		func(err error) {
+			if err != nil {
+				t.msg.Set(err.Error())
+				return
 			}
-			chk.OnChange(func(e dom.Event) {
-				if e.TargetChecked() {
-					if !containsStr(t.on, pID) {
-						t.on = append(t.on, pID)
-					}
-				} else {
-					t.on = removeStr(t.on, pID)
+
+			t.on = make([]string, resMembers.Len())
+			for i := 0; i < resMembers.Len(); i++ {
+				p := resMembers.At(i).(*chatroom.Member)
+				t.on[i] = p.UserId
+			}
+
+			var boxNodes []*dom.Element
+			for _, p := range t.people {
+				pID := p.UserId
+				chk := html.Input("checkbox").Attr("data-user-id", pID)
+				if containsStr(t.on, pID) {
+					chk.Attr("checked", "checked")
 				}
-			})
-			lbl := html.Label().Child(chk, dom.NewElement("span").Text(" "+p.Label))
-			boxNodes = append(boxNodes, lbl)
-		}
-		t.boxes.Set(boxNodes)
-	})
+				chk.OnChange(func(e dom.Event) {
+					if e.TargetChecked() {
+						if !containsStr(t.on, pID) {
+							t.on = append(t.on, pID)
+						}
+					} else {
+						t.on = removeStr(t.on, pID)
+					}
+				})
+				lbl := html.Label().Child(chk, dom.NewElement("span").Text(" "+p.Label))
+				boxNodes = append(boxNodes, lbl)
+			}
+			t.boxes.Set(boxNodes)
+		},
+	)
 }
 
 func (t *membersTab) save() {
@@ -140,24 +155,24 @@ func (t *membersTab) save() {
 		return
 	}
 
-	idRefs := make([]chatroom.IdRef, len(t.on))
-	for i, u := range t.on {
-		idRefs[i] = chatroom.IdRef{Id: u}
+	var toCreate []model.Model
+	for _, u := range t.on {
+		toCreate = append(toCreate, &chatroom.Member{RoomId: groupID, UserId: u})
 	}
-
-	args := chatroom.SetGroupMembersArgs{
-		TenantId: t.tenantID,
-		RoomId:   groupID,
-		UserIds:  idRefs,
+	if len(toCreate) > 0 {
+		t.caller.Call(
+			router.Operation{Module: chatroom.ModelName, Entity: "chat_member", Action: model.Create},
+			&crud.CreateArgs{Records: toCreate},
+			nil,
+			func(err error) {
+				if err != nil && model.KindOf(err) != model.ErrorConflict {
+					t.msg.Set(err.Error())
+				} else {
+					t.msg.Set("Miembros guardados.")
+				}
+			},
+		)
 	}
-
-	t.caller.Call(chatroom.ModelName+"."+chatroom.OpSetGroupMembers, &args, nil, func(err error) {
-		if err != nil {
-			t.msg.Set(err.Error())
-		} else {
-			t.msg.Set("Miembros guardados.")
-		}
-	})
 }
 
 func (t *membersTab) Render() *dom.Element {

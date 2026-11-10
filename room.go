@@ -1,9 +1,10 @@
 package chatroom
 
 import (
-	"webtyp.com/time"
+	"webtyp.com/crud"
 	"webtyp.com/model"
-	"webtyp.com/orm"
+	"webtyp.com/storage"
+	"webtyp.com/time"
 )
 
 func (m *Module) nowNano() time.Nano {
@@ -20,13 +21,16 @@ func (m *Module) ListParticipants(tenantID, userID string) ([]Participant, error
 	if tenantID == "" {
 		tenantID = m.tenantID
 	}
+	if tenantID != m.tenantID {
+		return []Participant{}, nil
+	}
 
 	opts, err := m.participants.ParticipantOptions(tenantID)
 	if err != nil {
 		return nil, err
 	}
 
-	presences, err := m.getPresences(tenantID)
+	presences, err := m.getPresences()
 	if err != nil {
 		return nil, err
 	}
@@ -62,78 +66,73 @@ func (m *Module) OpenDirect(tenantID, userID, otherUserID string) (RoomSummary, 
 	if tenantID == "" {
 		tenantID = m.tenantID
 	}
+	if tenantID != m.tenantID {
+		return RoomSummary{}, ErrNotFound
+	}
 	if otherUserID == userID {
 		return RoomSummary{}, ErrSelfDirect
 	}
 
-	opts, err := m.participants.ParticipantOptions(tenantID)
+	otherLabel, ok, err := m.isParticipant(otherUserID)
 	if err != nil {
 		return RoomSummary{}, err
 	}
-
-	var otherFound bool
-	var otherLabel string
-	for _, opt := range opts {
-		if opt.Key == otherUserID {
-			otherFound = true
-			otherLabel = opt.Value
-			break
-		}
-	}
-	if !otherFound {
+	if !ok {
 		return RoomSummary{}, ErrUnknownUser
+	}
+	title := otherLabel
+	if title == "" {
+		title = otherUserID
 	}
 
 	directKey := makeDirectKey(userID, otherUserID)
-
-	var room Room
-	err = m.db.Query(&room).
-		Where("tenant_id").Eq(tenantID).
-		Where("kind").Eq(KindDirect).
-		Where("direct_key").Eq(directKey).
-		ReadOne()
-
-	if err != nil && !orm.IsNotFound(err) {
-		return RoomSummary{}, err
+	low, high := userID, otherUserID
+	if low > high {
+		low, high = high, low
 	}
 
-	if orm.IsNotFound(err) {
+	var room Room
+	err = m.store.Atomic(func(tx crud.Tx) error {
+		row, found, err := firstRow(tx, func() model.Model { return &Room{} },
+			storage.Eq(Room_.Kind, KindDirect),
+			storage.Eq(Room_.DirectKey, directKey))
+		if err != nil {
+			return err
+		}
+		if found {
+			room = *row.(*Room)
+			return nil
+		}
 		now := m.nowNano()
 		roomID := m.ids.NewID()
 		room = Room{
 			Id:        roomID,
-			TenantId:  tenantID,
 			Kind:      KindDirect,
 			DirectKey: directKey,
 			CreatedAt: now,
 		}
-
-		m1 := Member{
-			TenantId: tenantID,
-			RoomId:   roomID,
-			UserId:   userID,
+		if err := tx.Create(&room); err != nil {
+			return err
 		}
-		m2 := Member{
-			TenantId: tenantID,
-			RoomId:   roomID,
-			UserId:   otherUserID,
+		if err := tx.Create(&Member{RoomId: roomID, UserId: userID}); err != nil {
+			return err
 		}
-
-		err = m.db.Tx(func(tx *orm.DB) error {
-			if err := tx.Create(&room); err != nil {
-				return err
-			}
-			if err := tx.Create(&m1); err != nil {
-				return err
-			}
-			return tx.Create(&m2)
-		})
-		if err != nil {
-			return RoomSummary{}, err
+		if err := tx.Create(&Member{RoomId: roomID, UserId: otherUserID}); err != nil {
+			return err
 		}
+		direct := Direct{
+			UserA:     low,
+			UserB:     high,
+			RoomId:    roomID,
+			CreatedAt: now,
+		}
+		return tx.Create(&direct)
+	})
+	if err != nil {
+		return RoomSummary{}, err
 	}
 
-	return m.getRoomSummary(tenantID, userID, room, otherLabel)
+	return m.getRoomSummary(room, userID, title)
 }
 
 func (m *Module) ListRooms(tenantID, userID string) ([]RoomSummary, error) {
@@ -143,8 +142,11 @@ func (m *Module) ListRooms(tenantID, userID string) ([]RoomSummary, error) {
 	if tenantID == "" {
 		tenantID = m.tenantID
 	}
+	if tenantID != m.tenantID {
+		return []RoomSummary{}, nil
+	}
 
-	if err := m.ensureBroadcast(tenantID); err != nil {
+	if err := m.ensureBroadcast(); err != nil {
 		return nil, err
 	}
 
@@ -153,52 +155,33 @@ func (m *Module) ListRooms(tenantID, userID string) ([]RoomSummary, error) {
 		return nil, err
 	}
 
-	var userMembers []Member
-	err = m.db.Query(&Member{}).
-		Where("tenant_id").Eq(tenantID).
-		Where("user_id").Eq(userID).
-		ReadAll(func() model.Model { return &Member{} }, func(m model.Model) {
-			userMembers = append(userMembers, *m.(*Member))
-		})
+	userMemberRows, err := allRows(m.store, func() model.Model { return &Member{} }, nil, storage.Eq(Member_.UserId, userID))
 	if err != nil {
 		return nil, err
 	}
 
 	var memberRoomIDs []string
-	for _, mem := range userMembers {
-		memberRoomIDs = append(memberRoomIDs, mem.RoomId)
+	for _, row := range userMemberRows {
+		memberRoomIDs = append(memberRoomIDs, row.(*Member).RoomId)
 	}
 
-	var broadcastRooms []Room
-	err = m.db.Query(&Room{}).
-		Where("tenant_id").Eq(tenantID).
-		Where("kind").Eq(KindBroadcast).
-		ReadAll(func() model.Model { return &Room{} }, func(m model.Model) {
-			broadcastRooms = append(broadcastRooms, *m.(*Room))
-		})
+	broadcastRows, err := allRows(m.store, func() model.Model { return &Room{} }, nil, storage.Eq(Room_.Kind, KindBroadcast))
 	if err != nil {
 		return nil, err
 	}
 
 	var allRooms []Room
-	for _, br := range broadcastRooms {
-		allRooms = append(allRooms, br)
+	for _, row := range broadcastRows {
+		allRooms = append(allRooms, *row.(*Room))
 	}
 
 	if len(memberRoomIDs) > 0 {
-		var memRooms []Room
-		err = m.db.Query(&Room{}).
-			Where("tenant_id").Eq(tenantID).
-			Where("id").In(memberRoomIDs).
-			ReadAll(func() model.Model { return &Room{} }, func(m model.Model) {
-				memRooms = append(memRooms, *m.(*Room))
-			})
+		memRows, err := allRows(m.store, func() model.Model { return &Room{} }, nil, storage.In(Room_.Id, memberRoomIDs))
 		if err != nil {
 			return nil, err
 		}
-		for _, r := range memRooms {
-			// Posting in General makes the sender a member of it; it is already
-			// listed above as the tenant's broadcast room.
+		for _, row := range memRows {
+			r := *row.(*Room)
 			if r.Kind == KindBroadcast {
 				continue
 			}
@@ -230,7 +213,7 @@ func (m *Module) ListRooms(tenantID, userID string) ([]RoomSummary, error) {
 			title = room.Name
 		}
 
-		s, err := m.getRoomSummary(tenantID, userID, room, title)
+		s, err := m.getRoomSummary(room, userID, title)
 		if err != nil {
 			return nil, err
 		}
@@ -240,101 +223,49 @@ func (m *Module) ListRooms(tenantID, userID string) ([]RoomSummary, error) {
 	return summaries, nil
 }
 
-func (m *Module) ensureBroadcast(tenantID string) error {
-	var found bool
-	var br Room
-	err := m.db.Query(&br).
-		Where("tenant_id").Eq(tenantID).
-		Where("kind").Eq(KindBroadcast).
-		ReadOne()
-	if err == nil {
-		found = true
-	} else if !orm.IsNotFound(err) {
+// ensureBroadcast creates the tenant's general room the first time anyone needs it.
+func (m *Module) ensureBroadcast() error {
+	if _, found, err := firstRow(m.store, func() model.Model { return &Room{} }, storage.Eq(Room_.Kind, KindBroadcast)); err != nil || found {
 		return err
 	}
-
-	if found {
-		return nil
-	}
-
-	now := m.nowNano()
-	room := Room{
-		Id:        m.ids.NewID(),
-		TenantId:  tenantID,
-		Kind:      KindBroadcast,
-		Name:      BroadcastName,
-		CreatedAt: now,
-	}
-	err = m.db.Create(&room)
-	if err != nil {
-		return err
-	}
-	return nil
+	return m.store.Atomic(func(tx crud.Tx) error {
+		if _, found, err := firstRow(tx, func() model.Model { return &Room{} }, storage.Eq(Room_.Kind, KindBroadcast)); err != nil || found {
+			return err
+		}
+		return tx.Create(&Room{Id: m.ids.NewID(), Kind: KindBroadcast, Name: BroadcastName, CreatedAt: m.nowNano()})
+	})
 }
 
-func (m *Module) isMember(tenantID, userID string, room Room) (bool, error) {
-	if room.Kind == KindBroadcast {
-		opts, err := m.participants.ParticipantOptions(tenantID)
-		if err != nil {
-			return false, err
-		}
-		for _, opt := range opts {
-			if opt.Key == userID {
-				return true, nil
-			}
-		}
-		return false, nil
-	}
-
-	var mem Member
-	err := m.db.Query(&mem).
-		Where("tenant_id").Eq(tenantID).
-		Where("room_id").Eq(room.Id).
-		Where("user_id").Eq(userID).
-		ReadOne()
-	if err == nil {
-		return true, nil
-	}
-	if orm.IsNotFound(err) {
-		return false, nil
-	}
-	return false, err
-}
-
-func (m *Module) getRoomSummary(tenantID, userID string, room Room, title string) (RoomSummary, error) {
-	var messages []Message
-	err := m.db.Query(&Message{}).
-		Where("tenant_id").Eq(tenantID).
-		Where("room_id").Eq(room.Id).
-		OrderBy("created_at").Asc().
-		ReadAll(func() model.Model { return &Message{} }, func(m model.Model) {
-			messages = append(messages, *m.(*Message))
-		})
+func (m *Module) getRoomSummary(room Room, userID string, title string) (RoomSummary, error) {
+	msgRows, err := allRows(m.store, func() model.Model { return &Message{} },
+		[]storage.Order{storage.Asc(Message_.CreatedAt)},
+		storage.Eq(Message_.RoomId, room.Id))
 	if err != nil {
 		return RoomSummary{}, err
 	}
 
 	var lastMsgAt time.Nano
 	var lastPreview string
-	if len(messages) > 0 {
-		lastMsg := messages[len(messages)-1]
+	if len(msgRows) > 0 {
+		lastMsg := msgRows[len(msgRows)-1].(*Message)
 		lastMsgAt = lastMsg.CreatedAt
 		lastPreview = truncateString(lastMsg.Body, PreviewLength)
 	}
 
 	var lastReadAt time.Nano
-	var mem Member
-	err = m.db.Query(&mem).
-		Where("tenant_id").Eq(tenantID).
-		Where("room_id").Eq(room.Id).
-		Where("user_id").Eq(userID).
-		ReadOne()
-	if err == nil {
-		lastReadAt = time.Nano(mem.LastReadAt)
+	row, found, err := firstRow(m.store, func() model.Model { return &Member{} },
+		storage.Eq(Member_.RoomId, room.Id),
+		storage.Eq(Member_.UserId, userID))
+	if err != nil {
+		return RoomSummary{}, err
+	}
+	if found {
+		lastReadAt = row.(*Member).LastReadAt
 	}
 
 	var unread int64
-	for _, msg := range messages {
+	for _, r := range msgRows {
+		msg := r.(*Message)
 		if msg.SenderId != userID && msg.CreatedAt > lastReadAt {
 			unread++
 		}
@@ -358,7 +289,7 @@ func makeDirectKey(a, b string) string {
 }
 
 func splitDirectKey(key string) []string {
-	var idx int = -1
+	var idx = -1
 	for i := 0; i < len(key); i++ {
 		if key[i] == '|' {
 			idx = i

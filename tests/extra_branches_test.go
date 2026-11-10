@@ -6,6 +6,7 @@ import (
 	chatroom "github.com/veltylabs/chat_room"
 	"github.com/veltylabs/chat_room/migrate"
 	"webtyp.com/fmt"
+	"webtyp.com/model"
 )
 
 var _ = migrate.Migrate
@@ -111,8 +112,8 @@ func TestExtraValidationAndErrorBranches(t *testing.T) {
 
 	// 5. SaveGroup name length validation
 	_, err = env.module.SaveGroup("t1", "", "")
-	if err == nil || err.Error() != chatroom.ErrNotFound.Error() {
-		t.Fatalf("expected ErrNotFound for empty group name")
+	if err == nil || model.KindOf(err) != model.ErrorInvalid {
+		t.Fatalf("expected ErrorInvalid for empty group name, got %v", err)
 	}
 
 	// 6. SetGroupMembers unknown user

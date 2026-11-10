@@ -54,8 +54,8 @@ func TestUnreadAndReadReceipts(t *testing.T) {
 	if err != nil {
 		t.Fatalf("ListMessages u1 failed: %v", err)
 	}
-	if !msgsU1[0].Mine || msgsU1[0].Read {
-		t.Fatalf("expected mine=true, read=false before u2 reads, got mine=%v, read=%v", msgsU1[0].Mine, msgsU1[0].Read)
+	if !msgsU1[0].Mine || msgsU1[0].IsRead {
+		t.Fatalf("expected mine=true, read=false before u2 reads, got mine=%v, read=%v", msgsU1[0].Mine, msgsU1[0].IsRead)
 	}
 
 	// u2 calls MarkRead
@@ -81,7 +81,7 @@ func TestUnreadAndReadReceipts(t *testing.T) {
 	if err != nil {
 		t.Fatalf("ListMessages u1 after MarkRead failed: %v", err)
 	}
-	if msgsU1After[0].Id == m1.Id && !msgsU1After[0].Read {
+	if msgsU1After[0].Id == m1.Id && !msgsU1After[0].IsRead {
 		t.Fatalf("expected m1 read=true after u2 MarkRead")
 	}
 }

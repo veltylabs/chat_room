@@ -1,9 +1,10 @@
 package chatroom
 
 import (
-	"webtyp.com/time"
+	"webtyp.com/crud"
 	"webtyp.com/model"
-	"webtyp.com/orm"
+	"webtyp.com/storage"
+	"webtyp.com/time"
 )
 
 func isOnline(now, lastSeen time.Nano) bool {
@@ -11,18 +12,16 @@ func isOnline(now, lastSeen time.Nano) bool {
 		return false
 	}
 	return now-lastSeen < presenceWindow.Nano()
-
 }
 
-func (m *Module) getPresences(tenantID string) ([]Presence, error) {
-	var presences []Presence
-	err := m.db.Query(&Presence{}).
-		Where("tenant_id").Eq(tenantID).
-		ReadAll(func() model.Model { return &Presence{} }, func(m model.Model) {
-			presences = append(presences, *m.(*Presence))
-		})
+func (m *Module) getPresences() ([]Presence, error) {
+	rows, err := allRows(m.store, func() model.Model { return &Presence{} }, nil)
 	if err != nil {
 		return nil, err
+	}
+	presences := make([]Presence, len(rows))
+	for i, r := range rows {
+		presences[i] = *r.(*Presence)
 	}
 	return presences, nil
 }
@@ -34,51 +33,29 @@ func (m *Module) Heartbeat(tenantID, userID string) ([]Participant, error) {
 	if tenantID == "" {
 		tenantID = m.tenantID
 	}
-
-	opts, err := m.participants.ParticipantOptions(tenantID)
-	if err != nil {
+	if tenantID != m.tenantID {
+		return nil, ErrNotFound
+	}
+	if _, ok, err := m.isParticipant(userID); err != nil {
 		return nil, err
-	}
-
-	var found bool
-	for _, opt := range opts {
-		if opt.Key == userID {
-			found = true
-			break
-		}
-	}
-	if !found {
+	} else if !ok {
 		return nil, ErrUnknownUser
 	}
 
 	now := m.nowNano()
-
-	var p Presence
-	err = m.db.Query(&p).
-		Where("tenant_id").Eq(tenantID).
-		Where("user_id").Eq(userID).
-		ReadOne()
-
-	if err == nil {
-		p.LastSeen = now
-		err = m.db.UpdateFields(&p, []string{"last_seen"},
-			orm.Eq(Presence_.TenantId, tenantID),
-			orm.Eq(Presence_.UserId, userID),
-		)
+	err := m.store.Atomic(func(tx crud.Tx) error {
+		row, found, err := firstRow(tx, func() model.Model { return &Presence{} }, storage.Eq(Presence_.UserId, userID))
 		if err != nil {
-			return nil, err
+			return err
 		}
-	} else if orm.IsNotFound(err) {
-		newP := Presence{
-			TenantId: tenantID,
-			UserId:   userID,
-			LastSeen: now,
+		if found {
+			presence := row.(*Presence)
+			presence.LastSeen = now
+			return tx.UpdateFields(presence, presence.UserId, []string{Presence_.LastSeen})
 		}
-		err = m.db.Create(&newP)
-		if err != nil {
-			return nil, err
-		}
-	} else {
+		return tx.Create(&Presence{UserId: userID, LastSeen: now})
+	})
+	if err != nil {
 		return nil, err
 	}
 

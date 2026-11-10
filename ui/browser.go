@@ -1,5 +1,3 @@
-//go:build browser
-
 package ui
 
 import (
@@ -43,7 +41,7 @@ func NewChatComponent(caller router.Caller, zone time.Zone, tenantID string, opt
 	}
 
 	v, err := chatview.New(chatview.Config{
-		Source:        &source{caller: caller, zone: zone, tenantID: tenantID},
+		Source:        &source{caller: caller, zone: zone, tenantID: tenantID, userID: o.userID},
 		MaxBodyLength: chatroom.MaxBodyLength,
 	})
 	if err != nil {

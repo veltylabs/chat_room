@@ -1,84 +1,77 @@
 # Arquitectura del Módulo `chat_room`
 
-## 1. Alcance y Dominio
+## 1. Visión general en un minuto
 
-El módulo `chat_room` proporciona mensajería interna entre usuarios dentro de un mismo establecimiento (tenant) en el ecosistema Velty.
+El módulo `chat_room` proporciona mensajería interna entre usuarios de una misma clínica o establecimiento (tenant) en el ecosistema Velty.
 
-- **Genérico por diseño**: Administra salas tipo `direct` (1:1), `group` (miembros explícitos) y `broadcast` (General por tenant).
-- **Participantes desacoplados**: Los usuarios autorizados para chatear provienen de una interfaz `ParticipantReader` (`ParticipantOptions(tenantID)`).
-- **Identidad basada en sesión**: La identidad del usuario emisor/lector procede exclusivamente del contexto autenticado (`ctx.UserID()`).
-- **Avisos push sin contenido**: Al enviar un mensaje se notifica a los destinatarios mediante un evento en el canal `InboxTopic(userID)` sin texto. El cliente consulta los datos mediante operaciones tipadas.
-- **Retención de mensajes**: `PurgeExpired` elimina mensajes cuya antigüedad supera `Deps.RetentionDays`.
+- **Salas flexibles**: Conversaciones directas 1:1, grupos de trabajo definidos por administración y una sala general de difusión comunitaria.
+- **Persistencia desacoplada por `crud`**: El módulo no gestiona transacciones ni SQL directo en sus operaciones de entrada; la persistencia, paginación, estampas temporales y claves compuestas son gobernadas por el framework `crud` mediante definiciones declarativas en `definition.go`.
+- **Reglas de negocio puras**: La lógica de negocio reside en archivos de reglas dedicados (`rule_*.go`) que validan la pertenencia, unicidad y permisos antes de persistir.
+- **Privacidad estricta**: Los usuarios solo pueden ver y participar en salas donde son miembros explícitos. Intentar acceder a una sala ajena responde con «no encontrado» (`ErrNotFound`), ocultando su existencia.
+- **Notificaciones push desacopladas**: Tras el envío de un mensaje se emite un aviso sin payload en el canal `InboxTopic(userID)` de cada destinatario; el contenido se recupera por lectura tipada.
 
-## 2. Entidades
+## 2. Piezas y estructura
+
+El módulo se compone de cinco tablas físicas y tres modelos de lectura virtual:
 
 ```
-chat_room (Room)
-  ├── chat_member (Member)
-  ├── chat_message (Message)
-  └── chat_presence (Presence)
+Tablas físicas:
+  chat_room        Salas directas, grupos y difusión
+  chat_member      Membresía por sala y usuario, con marca de último leído
+  chat_message     Mensajes de texto persistidos con autoría y fecha
+  chat_presence    Última conexión (latido) por usuario
+  chat_direct      Pares ordenados de usuarios asociados a salas directas
+
+Modelos de lectura (Wire):
+  participant      Lista de usuarios del tenant con estado en línea
+  room_summary     Resumen de salas con conteo de no leídos y última vista previa
+  message_view     Vista detallada de mensajes con autoría propia y lectura
 ```
 
-- **Room**: Representa una sala de chat (`id`, `tenant_id`, `kind`, `name`, `direct_key`, `created_at`, `updated_at`).
-- **Member**: Relación miembro-sala (`tenant_id`, `room_id`, `user_id`, `last_read_at`).
-- **Message**: Mensajes de texto enviados (`id`, `tenant_id`, `room_id`, `sender_id`, `sender_label`, `body`, `created_at`).
-- **Presence**: Marca de tiempo del último latido por usuario (`tenant_id`, `user_id`, `last_seen`).
+### Reglas vs Persistencia
 
-## 3. Operaciones del Módulo
+El framework `crud` gobierna el ciclo de vida de los registros:
+- Inyección de identificadores únicos (`m.ids.NewID()`) y partición por inquilino (`tenant_id`).
+- Verificación de inmutabilidad en claves primarias y campos de solo servidor.
+- Transaccionalidad atómica en operaciones por lote.
+- Publicación de eventos de cambio (`crud.Topic`) tras la confirmación en base de datos.
 
-| Operación | Recurso / Acción | Descripción |
-|---|---|---|
-| `list_participants` | Authenticated | Lista los participantes de la instalación |
-| `heartbeat` | Authenticated | Registra la presencia del usuario y retorna participantes con su estado online/offline |
-| `open_direct` | Authenticated | Abre o retorna la sala directa (1:1) entre el usuario actual y otro participante |
-| `list_rooms` | Authenticated | Retorna el resumen de salas del usuario con número de mensajes no leídos y vista previa |
-| `list_messages` | Authenticated | Lista los mensajes de una sala |
-| `send_message` | Authenticated | Envía un mensaje a una sala y emite un aviso push a los miembros |
-| `mark_read` | Authenticated | Actualiza la marca de lectura (`last_read_at`) del usuario en una sala |
-| `list_groups` | `chat_group` / Read | Lista los grupos existentes en el tenant |
-| `save_group` | `chat_group` / Create\|Update | Crea o actualiza un grupo |
-| `set_group_members` | `chat_group` / Update | Actualiza los miembros de un grupo |
-| `list_group_members` | `chat_group` / Read | Lista los miembros asignados a un grupo |
-| `list_group_candidates` | `chat_group` / Read | Lista todos los usuarios candidatos para la asignación de miembros a un grupo |
-| `delete_group` | `chat_group` / Delete | Elimina un grupo y sus mensajes/miembros |
+Las reglas (`rule_*.go`) se concentran únicamente en invariantes de dominio: orden de participantes, pertenencia a la sala y longitud de texto.
 
-## 4. Flujo Push y Presencia (Heartbeat)
+## 3. Flujos paso a paso
 
-### Flujo Push
-1. El emisor llama a `send_message`.
-2. El módulo guarda el mensaje, actualiza la lectura del emisor y emite un evento `InboxTopic(userID)` para cada destinatario en `Deps.Publisher`.
-3. El navegador receptor escucha en su canal `InboxTopic(userID)` y ejecuta `m.view.Refresh()`, consultando las operaciones `list_rooms` y `list_messages`.
+### Envío de mensajes y `checkSendMessage`
 
-### Flujo Heartbeat
-1. Cada 30 segundos (`HeartbeatIntervalSeconds`), el cliente invoca `heartbeat` (`OpHeartbeat`).
-2. El servidor actualiza `last_seen` en `chat_presence` para el usuario y evalúa si otros participantes estuvieron activos en los últimos 90 segundos (`PresenceWindowSeconds`).
+Tanto la operación de creación `chat_message.create` como el método exportado `SendMessage` comparten la rutina `checkSendMessage(tx, roomID, senderID, body, m)`:
+1. Valida que el texto no esté vacío y no exceda la longitud máxima (`MaxBodyLength`).
+2. Verifica que el remitente sea miembro activo de la sala o que la sala sea de difusión comunitaria.
+3. Asigna la estampa temporal actual y resuelve la etiqueta visible del remitente mediante `m.isParticipant`.
+4. Emite avisos ligeros en `InboxTopic(destinatario)` tras la persistencia para notificar a los miembros conectados.
 
-## 5. Ejemplo de Integración en Composición Root
+Compartir `checkSendMessage` garantiza que los límites de validación y la emisión de avisos se apliquen de forma idéntica sin importar el punto de entrada.
 
-### En el Servidor:
-```go
-db := orm.New(storageConn)
-mod, err := chatroom.New(db, chatroom.Deps{
-    IDs:           idGen,
-    Participants:  participantsService,
-    TenantID:      tenantID,
-    RetentionDays: 90,
-    Publisher:     broker,
-})
+### Apertura de conversaciones directas (1:1)
 
-// Migración de esquema
-err = migrate.Migrate(db.RawConn().(ddl.Execer), db.RawConn().(ddl.Compiler))
+1. El llamador invoca `chat_direct.create` con `{user_a, user_b}` ordenados lexicográficamente (`user_a < user_b`), siendo el emisor uno de los dos.
+2. Si el par ya existía, la creación responde el registro existente de forma idempotente con su `room_id`.
+3. Si es nuevo, la regla crea en una transacción atómica la sala `Room` de tipo directo, los dos registros `Member` correspondientes y la fila en `chat_direct`.
 
-// Registro de operaciones
-mod.MountOperations(routerRegistry)
-```
+### Administración de miembros en grupos
 
-### En el Cliente (UI):
-```go
-caller := loopback.ActingAs(tenantID, currentUserID, mod)
+Los miembros se modifican **un registro a la vez** (`chat_member.create` y `chat_member.delete`):
+- No existe una operación monolítica de sincronización de miembros.
+- Una asignación masiva se envía como un lote (`CreateArgs` con múltiples registros) ejecutado atómicamente por `crud`.
+- El método exportado `SetGroupMembers` calcula internamente la diferencia entre miembros actuales y deseados, aplicando inserciones y eliminaciones puntuales.
 
-// Menú y pantallas
-screens := ui.Screens(caller, ids, tenantID, ui.WithInbox(subscriber, currentUserID))
-```
+### Latido de presencia
 
-Las fechas que ve una persona salen de la zona de la instalación (`Deps.Zone` / `BrowserDeps.Zone`); un día guardado como clave usa las funciones UTC.
+1. El cliente envía un latido mediante `chat_presence.update` sobre su propio identificador (o `create` en su primera conexión).
+2. La regla verifica que el usuario autenticado solo actualice su propio registro (`old.UserId == a.UserID`).
+3. Al consultar participantes (`participant.Read`), se consideran en línea aquellos cuyo último latido ocurrió dentro de la ventana de actividad (`HeartbeatWindowSeconds`).
+
+## 4. Contratos y límites de seguridad
+
+- **Aislamiento por inquilino**: `orm.TenantStore` asegura que ninguna consulta o modificación pueda alcanzar registros de otro `tenant_id`.
+- **Límite de visibilidad («no encontrado»)**: Si un usuario intenta leer mensajes o acceder a una sala de la que no es miembro, el sistema responde `model.ErrorNotFound` en lugar de un error de autorización. Esto previene que un atacante deduzca la existencia o identificadores de salas privadas ajenas mediante enumeración.
+- **Inmutabilidad de autoría y pertenencia**: `SenderId` y `SenderLabel` son determinados estrictamente a partir de la sesión autenticada (`a.UserID`), impidiendo la suplantación de identidad en los mensajes.
+- **Actualización granular de miembros**: En `chat_member.update`, un participante únicamente tiene permitido modificar el campo `last_read_at` de su propio registro para actualizar confirmaciones de lectura; cualquier intento de alterar `room_id`, `user_id` o filas ajenas es rechazado.

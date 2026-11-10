@@ -35,6 +35,15 @@ erDiagram
         int last_seen
     }
 
+    chat_direct {
+        string tenant_id
+        string user_a PK
+        string user_b PK
+        string room_id
+        int created_at
+    }
+
     chat_room ||--o{ chat_member : "contiene"
     chat_room ||--o{ chat_message : "registra"
+    chat_room ||--o| chat_direct : "asocia"
 ```

@@ -66,7 +66,16 @@ func TestListGroupCandidates(t *testing.T) {
 	}
 
 	// 2. Multi-tenant isolation: tenant-b candidates are distinct
-	candidatesB, err := m.ListGroupCandidates("tenant-b")
+	mB, err := chatroom.New(db, chatroom.Deps{
+		IDs:           idGen,
+		Participants:  parts,
+		TenantID:      "tenant-b",
+		RetentionDays: 30,
+	})
+	if err != nil {
+		t.Fatalf("chatroom.New tenant-b failed: %v", err)
+	}
+	candidatesB, err := mB.ListGroupCandidates("tenant-b")
 	if err != nil {
 		t.Fatalf("ListGroupCandidates tenant-b failed: %v", err)
 	}

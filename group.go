@@ -1,36 +1,26 @@
 package chatroom
 
 import (
+	"webtyp.com/crud"
 	"webtyp.com/events"
 	"webtyp.com/model"
-	"webtyp.com/orm"
+	"webtyp.com/storage"
 	"webtyp.com/time"
 )
 
 func (m *Module) ListGroups(search, after string, limit int64) ([]Room, error) {
-	tenantID := m.tenantID
-
-	var groups []Room
-	qb := m.db.Query(&Room{}).
-		Where("tenant_id").Eq(tenantID).
-		Where("kind").Eq(KindGroup)
-
+	var conditions []storage.Condition
+	conditions = append(conditions, storage.Eq(Room_.Kind, KindGroup))
 	if search != "" {
-		qb = qb.Where("name").Like("%" + search + "%")
+		conditions = append(conditions, storage.Like(Room_.Name, "%"+search+"%"))
 	}
-	if after != "" {
-		qb = qb.Where("id").Gt(after)
-	}
-
-	qb = qb.OrderBy("id").Asc().Limit(int(limit))
-
-	err := qb.ReadAll(func() model.Model { return &Room{} }, func(m model.Model) {
-		groups = append(groups, *m.(*Room))
-	})
+	var groups []Room
+	err := m.store.ReadAll(func() model.Model { return &Room{} },
+		crud.Query{Conditions: conditions, After: after, Limit: limit},
+		func(r model.Model) { groups = append(groups, *r.(*Room)) })
 	if err != nil {
 		return nil, err
 	}
-
 	return groups, nil
 }
 
@@ -38,195 +28,107 @@ func (m *Module) SaveGroup(tenantID, id, name string) (Room, error) {
 	if tenantID == "" {
 		tenantID = m.tenantID
 	}
-
-	trimmedName := trimSpaces(name)
-	if len([]rune(trimmedName)) < 1 || len([]rune(trimmedName)) > 60 {
+	if tenantID != m.tenantID {
 		return Room{}, ErrNotFound
 	}
-
-	now := m.nowNano()
-
-	if id != "" {
-		var existing Room
-		err := m.db.Query(&existing).
-			Where("tenant_id").Eq(tenantID).
-			Where("id").Eq(id).
-			ReadOne()
-		if orm.IsNotFound(err) {
-			return Room{}, ErrNotFound
-		}
-		if err != nil {
-			return Room{}, err
-		}
-		if existing.Kind != KindGroup {
-			return Room{}, ErrNotGroup
-		}
-
-		existing.Name = trimmedName
-		existing.UpdatedAt = now
-		err = m.db.UpdateFields(&existing, []string{"name", "updated_at"},
-			orm.Eq(Room_.TenantId, tenantID),
-			orm.Eq(Room_.Id, id),
-		)
-		if err != nil {
-			return Room{}, err
-		}
-
-		if m.publisher != nil {
-			m.publisher.Publish(events.Event{
-				Topic:   TopicGroupSaved,
-				Payload: &existing,
-			})
-		}
-
-		return existing, nil
-	}
-
-	groupID := m.ids.NewID()
-	group := Room{
-		Id:        groupID,
-		TenantId:  tenantID,
-		Kind:      KindGroup,
-		Name:      trimmedName,
-		CreatedAt: now,
-	}
-
-	err := m.db.Create(&group)
+	name, err := validGroupName(name)
 	if err != nil {
 		return Room{}, err
 	}
-
+	now := m.nowNano()
+	var saved Room
+	err = m.store.Atomic(func(tx crud.Tx) error {
+		if id != "" {
+			room, err := roomOf(tx, id)
+			if err != nil {
+				return err
+			}
+			if room.Kind != KindGroup {
+				return ErrNotGroup
+			}
+			room.Name = name
+			room.UpdatedAt = now
+			if err := tx.UpdateFields(&room, room.Id, []string{Room_.Name, Room_.UpdatedAt}); err != nil {
+				return err
+			}
+			saved = room
+			return nil
+		}
+		saved = Room{
+			Id:        m.ids.NewID(),
+			Kind:      KindGroup,
+			Name:      name,
+			CreatedAt: now,
+		}
+		return tx.Create(&saved)
+	})
+	if err != nil {
+		return Room{}, err
+	}
 	if m.publisher != nil {
 		m.publisher.Publish(events.Event{
 			Topic:   TopicGroupSaved,
-			Payload: &group,
+			Payload: &saved,
 		})
 	}
-
-	return group, nil
+	return saved, nil
 }
 
 func (m *Module) SetGroupMembers(tenantID, roomID string, userIDs []string) error {
 	if tenantID == "" {
 		tenantID = m.tenantID
 	}
-
-	var room Room
-	err := m.db.Query(&room).
-		Where("tenant_id").Eq(tenantID).
-		Where("id").Eq(roomID).
-		ReadOne()
-	if orm.IsNotFound(err) {
+	if tenantID != m.tenantID {
 		return ErrNotFound
 	}
-	if err != nil {
-		return err
-	}
-
-	if room.Kind != KindGroup {
-		return ErrNotGroup
-	}
-
-	opts, err := m.participants.ParticipantOptions(tenantID)
-	if err != nil {
-		return err
-	}
-
-	validUsers := make([]string, 0, len(userIDs))
-	for _, uid := range userIDs {
-		found := false
-		for _, opt := range opts {
-			if opt.Key == uid {
-				found = true
-				break
-			}
+	var added, removed []string
+	err := m.store.Atomic(func(tx crud.Tx) error {
+		room, err := roomOf(tx, roomID)
+		if err != nil {
+			return err
 		}
-		if !found {
-			return ErrUnknownUser
+		if room.Kind != KindGroup {
+			return ErrNotGroup
 		}
-		validUsers = append(validUsers, uid)
-	}
-
-	var existingMembers []Member
-	err = m.db.Query(&Member{}).
-		Where("tenant_id").Eq(tenantID).
-		Where("room_id").Eq(roomID).
-		ReadAll(func() model.Model { return &Member{} }, func(m model.Model) {
-			existingMembers = append(existingMembers, *m.(*Member))
-		})
-	if err != nil {
-		return err
-	}
-
-	readAtMap := make([]fmtKeyValueInt, 0, len(existingMembers))
-	existingIDs := make([]string, 0, len(existingMembers))
-	for _, em := range existingMembers {
-		readAtMap = append(readAtMap, fmtKeyValueInt{Key: em.UserId, Value: time.Nano(em.LastReadAt)})
-		existingIDs = append(existingIDs, em.UserId)
-	}
-
-	var added []string
-	var removed []string
-
-	for _, uid := range validUsers {
-		inExisting := false
-		for _, em := range existingMembers {
-			if em.UserId == uid {
-				inExisting = true
-				break
-			}
-		}
-		if !inExisting {
-			added = append(added, uid)
-		}
-	}
-
-	for _, em := range existingMembers {
-		inNew := false
-		for _, uid := range validUsers {
-			if uid == em.UserId {
-				inNew = true
-				break
-			}
-		}
-		if !inNew {
-			removed = append(removed, em.UserId)
-		}
-	}
-
-	err = m.db.Tx(func(tx *orm.DB) error {
-		for _, em := range existingMembers {
-			if err := tx.Delete(&em, orm.Eq(Member_.TenantId, tenantID), orm.Eq(Member_.RoomId, roomID), orm.Eq(Member_.UserId, em.UserId)); err != nil {
+		for _, userID := range userIDs {
+			if _, ok, err := m.isParticipant(userID); err != nil {
 				return err
+			} else if !ok {
+				return ErrUnknownUser
 			}
 		}
-
-		for _, uid := range validUsers {
-			var lastRead time.Nano
-			for _, kv := range readAtMap {
-				if kv.Key == uid {
-					lastRead = kv.Value
-					break
+		rows, err := allRows(tx, func() model.Model { return &Member{} }, nil, storage.Eq(Member_.RoomId, roomID))
+		if err != nil {
+			return err
+		}
+		for _, row := range rows {
+			member := row.(*Member)
+			if !containsString(userIDs, member.UserId) {
+				if err := tx.Delete(row, model.JoinKey(member.RoomId, member.UserId)); err != nil {
+					return err
+				}
+				removed = append(removed, member.UserId)
+			}
+		}
+		for _, userID := range userIDs {
+			present := false
+			for _, row := range rows {
+				if row.(*Member).UserId == userID {
+					present = true
 				}
 			}
-
-			newMem := Member{
-				TenantId:   tenantID,
-				RoomId:     roomID,
-				UserId:     uid,
-				LastReadAt: lastRead,
-			}
-			if err := tx.Create(&newMem); err != nil {
-				return err
+			if !present {
+				if err := tx.Create(&Member{RoomId: roomID, UserId: userID}); err != nil {
+					return err
+				}
+				added = append(added, userID)
 			}
 		}
 		return nil
 	})
-
 	if err != nil {
 		return err
 	}
-
 	if m.publisher != nil {
 		affected := append(added, removed...)
 		for _, u := range affected {
@@ -235,18 +137,15 @@ func (m *Module) SetGroupMembers(tenantID, roomID string, userIDs []string) erro
 			})
 		}
 	}
-
 	return nil
-}
-
-type fmtKeyValueInt struct {
-	Key   string
-	Value time.Nano
 }
 
 func (m *Module) ListGroupCandidates(tenantID string) ([]Participant, error) {
 	if tenantID == "" {
 		tenantID = m.tenantID
+	}
+	if tenantID != m.tenantID {
+		return []Participant{}, nil
 	}
 
 	opts, err := m.participants.ParticipantOptions(tenantID)
@@ -270,30 +169,19 @@ func (m *Module) ListGroupMembers(tenantID, roomID string) ([]Participant, error
 	if tenantID == "" {
 		tenantID = m.tenantID
 	}
-
-	var room Room
-	err := m.db.Query(&room).
-		Where("tenant_id").Eq(tenantID).
-		Where("id").Eq(roomID).
-		ReadOne()
-	if orm.IsNotFound(err) {
-		return nil, ErrNotFound
+	if tenantID != m.tenantID {
+		return []Participant{}, nil
 	}
+
+	room, err := roomOf(m.store, roomID)
 	if err != nil {
 		return nil, err
 	}
-
 	if room.Kind != KindGroup {
 		return nil, ErrNotGroup
 	}
 
-	var members []Member
-	err = m.db.Query(&Member{}).
-		Where("tenant_id").Eq(tenantID).
-		Where("room_id").Eq(roomID).
-		ReadAll(func() model.Model { return &Member{} }, func(m model.Model) {
-			members = append(members, *m.(*Member))
-		})
+	memberRows, err := allRows(m.store, func() model.Model { return &Member{} }, nil, storage.Eq(Member_.RoomId, roomID))
 	if err != nil {
 		return nil, err
 	}
@@ -303,7 +191,7 @@ func (m *Module) ListGroupMembers(tenantID, roomID string) ([]Participant, error
 		return nil, err
 	}
 
-	presences, err := m.getPresences(tenantID)
+	presences, err := m.getPresences()
 	if err != nil {
 		return nil, err
 	}
@@ -311,7 +199,8 @@ func (m *Module) ListGroupMembers(tenantID, roomID string) ([]Participant, error
 	now := m.nowNano()
 	var participants []Participant
 
-	for _, mem := range members {
+	for _, row := range memberRows {
+		mem := row.(*Member)
 		var label string
 		for _, opt := range opts {
 			if opt.Key == mem.UserId {
@@ -342,92 +231,60 @@ func (m *Module) ListGroupMembers(tenantID, roomID string) ([]Participant, error
 }
 
 func (m *Module) DeleteGroup(tenantID, id string) error {
-	var room Room
-
 	if tenantID == "" {
-		err := m.db.Query(&room).Where("id").Eq(id).ReadOne()
-		if err == nil {
-			tenantID = room.TenantId
-		} else {
-			tenantID = m.tenantID
-		}
+		tenantID = m.tenantID
 	}
-
-	err := m.db.Query(&room).
-		Where("tenant_id").Eq(tenantID).
-		Where("id").Eq(id).
-		ReadOne()
-	if orm.IsNotFound(err) {
+	if tenantID != m.tenantID {
 		return ErrNotFound
 	}
-	if err != nil {
-		return err
-	}
-
-	if room.Kind != KindGroup {
-		return ErrNotGroup
-	}
-
-	var members []Member
-	_ = m.db.Query(&Member{}).
-		Where("tenant_id").Eq(tenantID).
-		Where("room_id").Eq(id).
-		ReadAll(func() model.Model { return &Member{} }, func(m model.Model) {
-			members = append(members, *m.(*Member))
-		})
-
-	var messages []Message
-	_ = m.db.Query(&Message{}).
-		Where("tenant_id").Eq(tenantID).
-		Where("room_id").Eq(id).
-		ReadAll(func() model.Model { return &Message{} }, func(m model.Model) {
-			messages = append(messages, *m.(*Message))
-		})
-
-	err = m.db.Tx(func(tx *orm.DB) error {
-		for _, msg := range messages {
-			if err := tx.Delete(&msg, orm.Eq(Message_.TenantId, tenantID), orm.Eq(Message_.RoomId, id), orm.Eq(Message_.Id, msg.Id)); err != nil {
-				return err
-			}
+	return m.store.Atomic(func(tx crud.Tx) error {
+		room, err := roomOf(tx, id)
+		if err != nil {
+			return err
 		}
-		for _, mem := range members {
-			if err := tx.Delete(&mem, orm.Eq(Member_.TenantId, tenantID), orm.Eq(Member_.RoomId, id), orm.Eq(Member_.UserId, mem.UserId)); err != nil {
-				return err
-			}
+		if room.Kind != KindGroup {
+			return ErrNotGroup
 		}
-		return tx.Delete(&room, orm.Eq(Room_.TenantId, tenantID), orm.Eq(Room_.Id, id))
+		if err := deleteGroupRows(tx, id); err != nil {
+			return err
+		}
+		return tx.Delete(&room, id)
 	})
-
-	return err
 }
 
 func (m *Module) PurgeExpired(tenantID string) (int, error) {
 	if tenantID == "" {
 		tenantID = m.tenantID
 	}
+	if tenantID != m.tenantID {
+		return 0, nil
+	}
 
 	now := m.nowNano()
 	cutoff := now - (time.Unix(m.retentionDays) * time.Day).Nano()
 
-	var expired []Message
-	err := m.db.Query(&Message{}).
-		Where("tenant_id").Eq(tenantID).
-		Where("created_at").Lt(int64(cutoff)).
-		ReadAll(func() model.Model { return &Message{} }, func(m model.Model) {
-			expired = append(expired, *m.(*Message))
-		})
-	if err != nil {
-		return 0, err
-	}
-
 	count := 0
-	for _, msg := range expired {
-		err := m.db.Delete(&msg, orm.Eq(Message_.TenantId, tenantID), orm.Eq(Message_.Id, msg.Id))
+	for {
+		rows, err := allRows(m.store, func() model.Model { return &Message{} }, nil, storage.Lt(Message_.CreatedAt, int64(cutoff)))
 		if err != nil {
 			return count, err
 		}
-		count++
+		if len(rows) == 0 {
+			break
+		}
+		err = m.store.Atomic(func(tx crud.Tx) error {
+			for _, row := range rows {
+				msg := row.(*Message)
+				if err := tx.Delete(msg, msg.Id); err != nil {
+					return err
+				}
+				count++
+			}
+			return nil
+		})
+		if err != nil {
+			return count, err
+		}
 	}
-
 	return count, nil
 }

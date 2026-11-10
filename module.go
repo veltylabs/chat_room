@@ -25,6 +25,7 @@ type Deps struct {
 
 type Module struct {
 	db            *orm.DB
+	store         *orm.Store
 	ids           model.IDGenerator
 	participants  ParticipantReader
 	tenantID      string
@@ -50,6 +51,7 @@ func New(db *orm.DB, deps Deps) (*Module, error) {
 
 	return &Module{
 		db:            db,
+		store:         orm.TenantStore(db, deps.TenantID, deps.IDs),
 		ids:           deps.IDs,
 		participants:  deps.Participants,
 		tenantID:      deps.TenantID,
@@ -57,8 +59,4 @@ func New(db *orm.DB, deps Deps) (*Module, error) {
 		publisher:     deps.Publisher,
 		clock:         deps.Clock,
 	}, nil
-}
-
-func (m *Module) ModelName() string {
-	return ModelName
 }

@@ -69,8 +69,8 @@ func TestDirectPrivacy(t *testing.T) {
 
 	// Third party u3 cannot ListMessages
 	_, err = env.module.ListMessages("t1", "u3", room.RoomId, "", 0)
-	if err == nil || err.Error() != chatroom.ErrNotMember.Error() {
-		t.Fatalf("expected ErrNotMember for u3 ListMessages, got %v", err)
+	if err == nil || err.Error() != chatroom.ErrNotFound.Error() {
+		t.Fatalf("expected ErrNotFound for u3 ListMessages, got %v", err)
 	}
 
 	// Third party u3 cannot SendMessage

@@ -32,6 +32,8 @@
     "sender label": ["etiqueta de remitente", "发送者标签", "प्रेषक लेबल", "تسمية المرسل", "rótulo do remetente", "étiquette de l'expéditeur", "Absenderetikett", "метка отправителя"],
     "title": ["título", "标题", "शीर्षक", "عنوان", "título", "titre", "Titel", "название"],
     "unread": ["no leído", "未读", "अपठित", "غير مقروء", "não lido", "non lu", "ungelesen", "непрочитанный"],
+    "user a": ["usuario a", "", "", "", "", "", "", ""],
+    "user b": ["usuario b", "", "", "", "", "", "", ""],
     "user ids": ["@user id@s", "", "", "", "", "", "", ""]
   }
 }

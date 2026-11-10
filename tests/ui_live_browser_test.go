@@ -10,6 +10,7 @@ import (
 	"github.com/veltylabs/chat_room/seed"
 	"github.com/veltylabs/chat_room/ui"
 	"webtyp.com/components/inboxlist"
+	"webtyp.com/crud"
 	"webtyp.com/dom"
 	"webtyp.com/events/mock"
 	"webtyp.com/fmt"
@@ -17,7 +18,6 @@ import (
 	"webtyp.com/layout/platformd"
 	"webtyp.com/model"
 	"webtyp.com/orm"
-	"webtyp.com/router/loopback"
 	"webtyp.com/storage/mem"
 	"webtyp.com/time"
 )
@@ -63,7 +63,7 @@ func TestChatScreenLiveWasm(t *testing.T) {
 		t.Fatalf("seed.Load failed: %v", err)
 	}
 
-	caller := loopback.ActingAs(tenant, "u1", mod)
+	caller := crud.LoopbackActingAs(broker, "u1", mod)
 
 	zone, _ := time.LoadZone("America/Santiago")
 	screens := ui.Screens(caller, zone, ids, tenant, ui.WithInbox(broker, "u1"))
