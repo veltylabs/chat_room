@@ -2,8 +2,6 @@
 PLAN: "refactor!: chat_room on the crud-by-declaration framework — Allow and Rules in definition.go, persistence by crud, only domain rules in rule files"
 EXECUTOR: jules
 REVIEWER: none
-STATUS: running
-SESSION: 12282846242674632024
 ---
 
 > Read AGENTS.md at the repo root before any change.
@@ -167,3 +165,16 @@ Translate to Spanish every README, `docs/*`, diagram and code comment still in E
 
 `gotest` passes; `langc sync .` clean; every grep of this plan empty. A tree that does not compile or whose tests did not run is a
 failed delivery.
+
+## Additions (second attempt)
+
+The first session of this plan stalled after three hours. Apply every answer already listed above in this section, plus these checks the reviewer runs:
+
+- **`definitionc` v0.1.42** replaces v0.1.41 everywhere in «Tools» (`go install webtyp.com/definitionc/cmd/definitionc@v0.1.42`, `go get webtyp.com/definitionc@v0.1.42`). A read model is `Allow: model.Read` with no `DB:` marks (or `Wire: true`); its rule is `func (p *X) Read(a crud.CurrentUser, filter *X, args crud.ReadArgs, m *Module) (model.ModelSlice, error)` and the values the caller sends arrive in `filter` (declare them on the read model with `OmitEmpty`); a caller and a test pass them as `&crud.ReadArgs{Filter: &X{...}}`.
+- **Never edit `definition_gen.go`; never write `go.sum`/`go.mod` hashes by hand** (only `go get` and `go mod tidy` write them). After every `definitionc` run repeat the `go get` line of «Tools» and `go mod tidy`. If a module cannot be fetched, stop and say so in the PR.
+- **Delete the hand-written mutators** the plan names; tests that need rows as fixtures use `crud.LoopbackActingAs` (`&crud.CreateArgs{Records: ...}`) or the `Import...` methods of `import.go` (shape: https://github.com/veltylabs/patient_directory/blob/main/import.go). A test of a removed method is rewritten as `Test<Area>_<Rule>` through the caller, never skipped.
+- **Stage 5:** `seed/demo.go` (`//go:build wasm`) like https://github.com/veltylabs/patient_directory/blob/main/seed/demo.go; delete the old `web/browser/main.go`; delete any test that uses the removed `appkit.Deps`/`Server.Build`; add `TestMount_MatchesDefinition` (`crud.Mount(nil, nil, nil, mod)` returns nil). `gotest` must end green on EVERY destination (`browser` and `wasm` included).
+- **Stage 6:** every test the plan names, by name, plus `TestDemo_Valid` (`tests/demo_test.go`, `//go:build wasm`, copy the reference) and one test that an allowed write publishes a `*crud.Change` on `crud.Topic(ModelName, "<entity>", model.<Action>)`. Each test has a row in `docs/TESTS.md` as `| [TestName](../tests/file_test.go) | rule |` under `| Test | Rule |` (no File column) or `gotest` fails «tests index».
+- **No scratch files** (`*.py`, `*.sh`, `commit_message.txt`). «Executor notes» must be true: never claim a file was restored if it was deleted.
+- **Stage 7:** `README.md` in Spanish with the four mandatory sections (`¿Por qué existe?`, `Antes de comenzar`, `Guía paso a paso` with a complete compilable Go example importing `webtyp.com/fmt`, `Mapa de documentación`) and the «Sin/Con» table; `langc sync .` reports zero pending.
+- **Do not stop to confirm and do not ask permission to push.** When the delivery check passes, commit, push and OPEN THE PULL REQUEST. If a stage is not finished after 30 minutes, open the PR anyway and list what is missing.
