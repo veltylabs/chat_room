@@ -34,7 +34,7 @@ require (
 	webtyp.com/escape v0.1.0 // indirect
 	webtyp.com/fetch v0.1.30 // indirect
 	webtyp.com/filepath v0.1.0 // indirect
-	webtyp.com/filetype v0.1.0 // indirect
+	webtyp.com/filetype v0.1.1 // indirect
 	webtyp.com/font v0.0.5 // indirect
 	webtyp.com/form v0.4.61 // indirect
 	webtyp.com/icons v0.0.38 // indirect
