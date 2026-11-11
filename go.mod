@@ -6,7 +6,7 @@ require (
 	webtyp.com/ddl v0.0.49
 	webtyp.com/events v0.1.8
 	webtyp.com/fmt v1.0.0
-	webtyp.com/input v0.0.36
+	webtyp.com/input v0.1.0
 	webtyp.com/model v0.2.19
 	webtyp.com/orm v0.12.33
 	webtyp.com/router v0.4.22
@@ -34,6 +34,7 @@ require (
 	webtyp.com/escape v0.1.0 // indirect
 	webtyp.com/fetch v0.1.30 // indirect
 	webtyp.com/filepath v0.1.0 // indirect
+	webtyp.com/filetype v0.0.6 // indirect
 	webtyp.com/font v0.0.5 // indirect
 	webtyp.com/form v0.4.61 // indirect
 	webtyp.com/icons v0.0.38 // indirect
