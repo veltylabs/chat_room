@@ -5,7 +5,7 @@ go 1.26.8
 require (
 	webtyp.com/ddl v0.0.49
 	webtyp.com/events v0.1.8
-	webtyp.com/fmt v1.0.0
+	webtyp.com/fmt v1.0.2
 	webtyp.com/input v0.2.0
 	webtyp.com/model v0.2.21
 	webtyp.com/orm v0.12.33
@@ -15,7 +15,7 @@ require (
 )
 
 require (
-	webtyp.com/components v0.8.72
+	webtyp.com/components v0.8.73
 	webtyp.com/crud v0.0.12
 	webtyp.com/dom v0.13.29
 	webtyp.com/html v0.0.30
