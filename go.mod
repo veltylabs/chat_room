@@ -6,7 +6,7 @@ require (
 	webtyp.com/ddl v0.0.49
 	webtyp.com/events v0.1.8
 	webtyp.com/fmt v1.0.2
-	webtyp.com/input v0.2.0
+	webtyp.com/input v0.2.4
 	webtyp.com/model v0.2.23
 	webtyp.com/orm v0.12.33
 	webtyp.com/router v0.4.22
@@ -28,6 +28,7 @@ require (
 require (
 	webtyp.com/calendar v0.1.0 // indirect
 	webtyp.com/color v0.1.2 // indirect
+	webtyp.com/country v0.0.2 // indirect
 	webtyp.com/css v0.4.31 // indirect
 	webtyp.com/definitioncheck v0.0.3 // indirect
 	webtyp.com/erd v0.0.16 // indirect
