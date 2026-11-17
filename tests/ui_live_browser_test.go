@@ -12,7 +12,7 @@ import (
 	"webtyp.com/components/inboxlist"
 	"webtyp.com/crud"
 	"webtyp.com/dom"
-	"webtyp.com/events/mock"
+	"webtyp.com/events/inprocess"
 	"webtyp.com/fmt"
 	"webtyp.com/layout/app"
 	"webtyp.com/layout/platformd"
@@ -43,7 +43,7 @@ func wasmClock() func() time.Nano {
 func TestChatScreenLiveWasm(t *testing.T) {
 	tenant := "tenant-wasm"
 	ids := &mockIDGen{}
-	broker := &mock.Broker{}
+	broker := &inprocess.Broker{}
 	db := orm.New(mem.New())
 
 	mod, err := chatroom.New(db, chatroom.Deps{

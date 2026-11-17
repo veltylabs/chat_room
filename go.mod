@@ -45,3 +45,5 @@ require (
 	webtyp.com/rpc v0.2.21 // indirect
 	webtyp.com/widget v0.6.49 // indirect
 )
+
+replace webtyp.com/events => ../../../webtyp/events

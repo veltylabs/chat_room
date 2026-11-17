@@ -3,7 +3,7 @@ package tests
 import (
 	"webtyp.com/time"
 	chatroom "github.com/veltylabs/chat_room"
-	"webtyp.com/events/mock"
+	"webtyp.com/events/inprocess"
 	"webtyp.com/fmt"
 	"webtyp.com/orm"
 	"webtyp.com/storage/mem"
@@ -30,7 +30,7 @@ type testEnv struct {
 	db        *orm.DB
 	idGen     *mockIDGen
 	parts     *mockParticipants
-	broker    *mock.Broker
+	broker    *inprocess.Broker
 	clockTime time.Nano
 	module    *chatroom.Module
 }
@@ -40,7 +40,7 @@ func setupTestEnv(tenantID string, retentionDays int, participantList []fmt.KeyV
 	db := orm.New(memConn)
 	idGen := &mockIDGen{}
 	parts := &mockParticipants{list: participantList}
-	broker := &mock.Broker{}
+	broker := &inprocess.Broker{}
 
 	env := &testEnv{
 		db:        db,
