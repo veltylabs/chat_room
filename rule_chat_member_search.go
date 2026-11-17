@@ -5,7 +5,7 @@ import (
 	"webtyp.com/storage"
 )
 
-func (p *Member) Search(a crud.CurrentUser, filter *Member, text string, m *Module) ([]storage.Condition, error) {
+func (p *Member) Search(a crud.CurrentUser, filter *Member, m *Module) ([]storage.Condition, error) {
 	var conditions []storage.Condition
 	if filter != nil && filter.RoomId != "" {
 		conditions = append(conditions, storage.Eq(Member_.RoomId, filter.RoomId))

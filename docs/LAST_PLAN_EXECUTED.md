@@ -1,56 +1,154 @@
 ---
-PLAN: "refactor!: chat_room on the crud-by-declaration framework — Allow and Rules in definition.go, persistence by crud, only domain rules in rule files"
-EXECUTOR: jules
+PLAN: "refactor: chat_room rules answer with crud.RuleAnswer, Search stops searching text"
+EXECUTOR: antigravity
 REVIEWER: none
 ---
 
 > Read AGENTS.md at the repo root before any change.
 > **Finish by yourself:** when the delivery check passes, commit, push and open the pull request. Never ask whether to
-> proceed or finalize — nobody answers, and a session that waits ends without your work. Commit after every stage.
-> Never run `git reset`, `git restore`, `git checkout -- <file>` or `git stash` on your own work.
-> **Push early:** after EVERY stage run `git push origin HEAD`; after Stage 3 open the pull request and keep pushing to it.
-> **Never ask a yes/no question about progress** («am I on the right track?», «shall I proceed?», «shall I push?»): the answer is always yes. Ask only when a compile error or a signature in this plan is wrong, and name the symbol.
-> Never edit `definition_gen.go`. Never write `go.mod`/`go.sum` lines by hand: only `go get` and `go mod tidy` do. No scratch files (`*.py`, `*.sh`, no sed/regex scripts over the source): edit by hand, file by file, and run `gotest` after each file.
+> proceed or finalize — nobody answers, and a session that waits ends without your work.
 
-# Plan: `chat_room` on the crud-by-declaration framework
+# Plan — `github.com/veltylabs/chat_room`: bring the module to the current `crud`
 
-A first and a second session of this plan stalled on questions the plan did not answer. This version is split into small stages, one file each; **every answer they needed is written inside the stage that needs it**. Read the stage file, do it, `gotest`, commit, push, next.
+Orchestrated from the owner's `EXECUTION_ORDER_MASTER_PLAN` (block E). **Do not start before the versions table below has no `{{` left** (it is filled when the framework release of «RECORD_SEARCH phase 2» is published).
 
-Reference module, already migrated, the shape to copy: https://github.com/veltylabs/patient_directory/blob/main — `definition.go`, `rule_patient_create.go`, `rule_patient_update.go`, `rule_patient_search.go`, `store.go`, `import.go`, `module/server.go`, `seed/demo.go`, `tests/setup_test.go`, `tests/crud_test.go`, `tests/demo_test.go`.
+## 0. Context (verified in a scratch copy on 2026-11-16: every command below was run and `gotest` ended green on every destination — do not re-diagnose)
+
+`chat_room` still pins an old `webtyp.com/crud` (v0.0.11/v0.0.12). Three framework changes reached it:
+
+1. **`crud.RuleAnswer` is a struct, and `ApplyAndPublish` is a function.** A rule that rejects returns `crud.RuleAnswer{}` (the zero value rejects); a rule that accepts returns `crud.ApplyAndPublish()`. `return 0, err` and `return crud.ApplyAndPublish, nil` no longer compile.
+2. **A `Search` rule no longer receives the typed text.** `crud` itself filters every typed word on the hidden column `text_search` (accent- and case-insensitive); the rule only adds AND conditions (state, site…). The parameter `text string` is removed from the signature, and any branch that searched the text with `LIKE` is deleted.
+
+Anti-footguns: do **not** touch `definition_gen.go` by hand (a later stage regenerates it); do **not** add a `replace` to `go.mod`; do **not** write `go.sum` lines (only `go get` and `go mod tidy` write them); do **not** edit with `sed`/regex/scripts — one file at a time with the editor, `gotest` at the end of each stage; do **not** change any rule's logic, only what this plan lists.
+
+## 1. Tools and versions
+
+Versions (filled at dispatch from the published release; a `{{` left means: stop and say so in the PR):
+
+| Module | Tag |
+|---|---|
+| `webtyp.com/model` | `v0.2.24` |
+| `webtyp.com/input` | `v0.2.5` |
+| `webtyp.com/storage` | `v0.2.8` |
+| `webtyp.com/orm` | `v0.12.42` |
+| `webtyp.com/ddl` | `v0.0.57` |
+| `webtyp.com/crud` | `v0.0.17` |
+| `webtyp.com/definitioncheck` | `v0.0.10` |
+| `webtyp.com/definitionc` | `v0.1.49` |
+| `webtyp.com/view` | `v0.6.86` |
+
+```bash
+export GOPRIVATE="webtyp.com/*,github.com/veltylabs/*" GOFLAGS=-mod=mod
+go install webtyp.com/devflow/cmd/gotest@latest
+go install webtyp.com/definitionc/cmd/definitionc@v0.1.49
+export PATH="$PATH:$(go env GOPATH)/bin"
+go get webtyp.com/model@v0.2.24 webtyp.com/input@v0.2.5 webtyp.com/storage@v0.2.8 webtyp.com/orm@v0.12.42 webtyp.com/ddl@v0.0.57 webtyp.com/crud@v0.0.17 webtyp.com/definitioncheck@v0.0.10 webtyp.com/view@v0.6.86
+go mod tidy
+```
+
+Run `go vet ./...` once: the errors it prints are exactly the sites of stages 3–4 (and `definition_gen.go`, which stage 5 regenerates). `go.mod` must end with no `replace` line.
+
+## 2. APIs used (read from the published tags above; if a signature differs, stop and name the symbol in the PR — never adapt it by guessing)
+
+| Symbol | Exact signature | File |
+|---|---|---|
+| `crud.RuleAnswer` | `type RuleAnswer struct{…}`; its zero value is a rejection | `crud/result.go` |
+| `crud.ApplyAndPublish` | `func ApplyAndPublish(calls ...ExternalCall) RuleAnswer` | `crud/result.go` |
+| `crud.ApplyWithoutPublishing` | `func ApplyWithoutPublishing(calls ...ExternalCall) RuleAnswer` | `crud/result.go` |
+| `Search` hook the generator wires | `func(a crud.CurrentUser, filter model.Model) ([]storage.Condition, error)`; your method is `func (p *X) Search(a crud.CurrentUser, filter *X, m *Module) ([]storage.Condition, error)` | `crud/contract.go` |
+
+## 3. Stage — the rules answer with `crud.RuleAnswer` (one file at a time; `gotest` after the last)
+
+In each file below, inside the rule's body only: every `return 0, <err>` becomes `return crud.RuleAnswer{}, <err>`, and the final `return crud.ApplyAndPublish, nil` becomes `return crud.ApplyAndPublish(), nil` (or `crud.ApplyWithoutPublishing` → `crud.ApplyWithoutPublishing()` where the file has it). Nothing else changes. Worked example (`rule_Post_update.go` of `editorial`):
+
+```go
+// before
+return 0, &model.FieldError{Field: "state", Err: ErrInvalidTransition}
+return crud.ApplyAndPublish, nil
+// after
+return crud.RuleAnswer{}, &model.FieldError{Field: "state", Err: ErrInvalidTransition}
+return crud.ApplyAndPublish(), nil
+```
+
+| File | `return 0,` to change | `crud.Apply…` to call |
+|---|---|---|
+| `rule_chat_direct_create.go` | 6 | 1 |
+| `rule_chat_member_create.go` | 4 | 1 |
+| `rule_chat_member_delete.go` | 2 | 1 |
+| `rule_chat_member_update.go` | 2 | 1 |
+| `rule_chat_message_create.go` | 1 | 1 |
+| `rule_chat_presence_create.go` | 3 | 1 |
+| `rule_chat_presence_update.go` | 2 | 1 |
+| `rule_chat_room_create.go` | 1 | 1 |
+| `rule_chat_room_delete.go` | 2 | 1 |
+| `rule_chat_room_update.go` | 3 | 1 |
+
+Total: 26 returns and 10 calls. Check: `grep -n "return 0, " rule_*.go` → empty; `grep -nE "crud\.Apply(AndPublish|WithoutPublishing)," rule_*.go` → empty.
+
+## 4. Stage — `Search` rules lose `text`
+
+| File | New signature (line 1 of the function) | Also delete |
+|---|---|---|
+| `rule_chat_member_search.go` | `func (p *Member) Search(a crud.CurrentUser, filter *Member, m *Module) ([]storage.Condition, error) {` | — |
+| `rule_chat_room_search.go` | `func (p *Room) Search(a crud.CurrentUser, filter *Room, m *Module) ([]storage.Condition, error) {` | the `if text != ""` block (3 lines) and its `storage.Like`/`orm.Like` call |
+
+Never replace a deleted text branch with another text search: `crud` already searches `text_search`. Example (`chat_room`, `rule_chat_room_search.go`):
+
+```go
+// before
+func (p *Room) Search(a crud.CurrentUser, filter *Room, text string, m *Module) ([]storage.Condition, error) {
+	var conditions []storage.Condition
+	if filter != nil && filter.Kind != "" {
+		conditions = append(conditions, storage.Eq(Room_.Kind, filter.Kind))
+	}
+	if text != "" {
+		conditions = append(conditions, storage.Like(Room_.Name, "%"+text+"%"))
+	}
+	return conditions, nil
+}
+// after
+func (p *Room) Search(a crud.CurrentUser, filter *Room, m *Module) ([]storage.Condition, error) {
+	var conditions []storage.Condition
+	if filter != nil && filter.Kind != "" {
+		conditions = append(conditions, storage.Eq(Room_.Kind, filter.Kind))
+	}
+	return conditions, nil
+}
+```
+
+Check: `grep -n "text string" rule_*search.go` → empty.
+
+## 5. Stage — regenerate `definition_gen.go`
+
+```bash
+definitionc
+go get webtyp.com/model@v0.2.24 webtyp.com/input@v0.2.5 webtyp.com/storage@v0.2.8 webtyp.com/orm@v0.12.42 webtyp.com/ddl@v0.0.57 webtyp.com/crud@v0.0.17 webtyp.com/definitioncheck@v0.0.10 webtyp.com/view@v0.6.86
+go mod tidy
+```
+
+`definitionc` rewrites `go.mod` to older versions: the `go get` line and `go mod tidy` after it are mandatory. The regenerated `Search:` hooks lose `text string`. Never edit `definition_gen.go`. Run `gotest`.
+
+**Open the pull request now** (after this stage) and keep committing to it; commit after every stage; never run `git reset`, `git restore`, `git checkout -- <file>` or `git stash` on your own work.
+
+## 6. Stage — documentation and language
+
+- `docs/TESTS.md`: unchanged unless a test name changed (none does); `gotest` checks the index.
+- `grep -rn "ApplyAndPublish\b[^(]\|return 0," README.md docs/*.md docs/diagrams/*.md` → fix any snippet that still shows the old form with the new one.
+- Language (veltylabs): translate to Spanish every English comment in the files this plan touched (the rule files above); do not rewrite what is already Spanish.
+
+## 7. Delivery check
+
+1. `gotest` ends green on **every destination it lists** (`vet`, `style`, `race`, `tests`, `wasm`, `browser`, `tests index`). A PR that does not compile or whose tests could not run is a failed delivery.
+2. `grep -n "replace" go.mod` → empty; `go.sum` written only by `go get`/`go mod tidy`.
+3. The greps of stages 3–4 return empty; after the regeneration `grep -n "text string" definition_gen.go` → empty too.
+4. When it passes: commit, push, open the pull request. Stuck for 30 minutes: open it anyway, listing what fails.
 
 ## Stages
 
-| # | File | What | Files touched |
-|---|---|---|---|
-| 1 | [PLAN_STAGE_1_TOOLS_DEFINITION.md](PLAN_STAGE_1_TOOLS_DEFINITION.md) | tools, `definition.go` | `definition.go`, `go.mod`, `go.sum`, `migrate/migrate.go` |
-| 2 | [PLAN_STAGE_2_MODULE_STORE.md](PLAN_STAGE_2_MODULE_STORE.md) | `Module.store`, `store.go`, read helpers | `module.go`, `store.go`, `rows.go` |
-| 3 | [PLAN_STAGE_3_RULES.md](PLAN_STAGE_3_RULES.md) | generate and write the rule files | `rule_*.go`, `checks.go` |
-| 4 | [PLAN_STAGE_4_READERS.md](PLAN_STAGE_4_READERS.md) | readers and writers on `m.store`; delete the old paths | `group.go`, `message.go`, `room.go`, `presence.go`, `ops.go` (deleted) |
-| 5 | [PLAN_STAGE_5_BROWSER.md](PLAN_STAGE_5_BROWSER.md) | `view.go`, `module/`, `seed/demo.go` | `view.go`, `module/*.go`, `seed/demo.go`, `web/` (deleted) |
-| 6 | [PLAN_STAGE_6_TESTS.md](PLAN_STAGE_6_TESTS.md) | tests and `docs/TESTS.md` | `tests/*.go`, `docs/TESTS.md` |
-| 7 | [PLAN_STAGE_7_DOCS.md](PLAN_STAGE_7_DOCS.md) | README, architecture, `langc` | `README.md`, `docs/ARCHITECTURE.md`, `lang.json` |
-
-## Operation mapping (every operation of today has exactly one row)
-
-`<entity>.<verb>` is `router.Operation{Module: ModelName, Entity: "<entity>", Action: model.<Verb>}`.
-
-| Today | After |
-|---|---|
-| `list_participants`, `list_group_candidates` | read model `participant` |
-| `heartbeat` | `chat_presence.create` (first time) / `chat_presence.update` with `["last_seen"]` |
-| `open_direct` | `chat_direct.create` with `{user_a, user_b}` (sorted; the caller is one) |
-| `list_rooms` | read model `room_summary` |
-| `list_messages` | read model `message_view` with filter `{room_id, after_id}` |
-| `send_message` | `chat_message.create` |
-| `mark_read` | `chat_member.update` (id `room/user`) with `["last_read_at"]` |
-| `list_groups`, `save_group`, `delete_group` | `chat_room.read` (filter `{kind:"group"}`), `.create`, `.update`, `.delete` |
-| `set_group_members` | `chat_member.create` / `chat_member.delete`, one record per operation (a batch is a `CreateArgs` with several `Records`) |
-| `list_group_members` | `chat_member.read` with filter `{room_id}` |
-
-## Delivery check
-
-1. `gotest` ends green on EVERY destination (`wasm` and `browser` included) and «tests index» ✅. A red destination is a failed delivery.
-2. `langc sync .` reports zero untranslated keys for `es` and zero reuse warnings.
-3. `grep -rn "reg.Operation\|view.MountSave\|view.MountDelete\|router.Context\|rpc.WriteError\|m\.db\." --include=*.go . | grep -v "_test.go\|^./ui/\|^./definition_gen.go"` → only `m.db` uses inside `module.go`'s constructor (the store is built from it) and `store.go`.
-4. `ls *.py *.sh commit_message.txt 2>/dev/null` → empty; `grep -c XXXX go.sum` → 0.
-5. `git diff --stat main` lists only the files of the stages table plus badge files `gotest` rewrites; nothing outside it is deleted.
+| # | Stage | Done when |
+|---|---|---|
+| 1 | Tools and versions | `go vet ./...` prints only the sites of stages 3–4 |
+| 3 | `crud.RuleAnswer` | the two greps of stage 3 are empty |
+| 4 | `Search` without `text` | `grep "text string" rule_*search.go` empty |
+| 5 | `definitionc` | `gotest` green; PR open |
+| 6 | docs and language | greps empty |

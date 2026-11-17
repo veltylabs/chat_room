@@ -645,8 +645,8 @@ func (m *Module) MountOperations(reg crud.Registry) {
 		Delete: func(a crud.CurrentUser, tx crud.Tx, rec model.Model) (crud.RuleAnswer, error) {
 			return rec.(*Room).Delete(a, tx, m)
 		},
-		Search: func(a crud.CurrentUser, filter model.Model, text string) ([]storage.Condition, error) {
-			return (&Room{}).Search(a, filter.(*Room), text, m)
+		Search: func(a crud.CurrentUser, filter model.Model) ([]storage.Condition, error) {
+			return (&Room{}).Search(a, filter.(*Room), m)
 		},
 	})
 	reg.AddStoredEntity(crud.StoredEntity{
@@ -664,8 +664,8 @@ func (m *Module) MountOperations(reg crud.Registry) {
 		Delete: func(a crud.CurrentUser, tx crud.Tx, rec model.Model) (crud.RuleAnswer, error) {
 			return rec.(*Member).Delete(a, tx, m)
 		},
-		Search: func(a crud.CurrentUser, filter model.Model, text string) ([]storage.Condition, error) {
-			return (&Member{}).Search(a, filter.(*Member), text, m)
+		Search: func(a crud.CurrentUser, filter model.Model) ([]storage.Condition, error) {
+			return (&Member{}).Search(a, filter.(*Member), m)
 		},
 	})
 	reg.AddStoredEntity(crud.StoredEntity{

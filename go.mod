@@ -3,24 +3,24 @@ module github.com/veltylabs/chat_room
 go 1.26.8
 
 require (
-	webtyp.com/ddl v0.0.49
-	webtyp.com/events v0.1.8
-	webtyp.com/fmt v1.0.2
-	webtyp.com/input v0.2.4
-	webtyp.com/model v0.2.23
-	webtyp.com/orm v0.12.33
-	webtyp.com/router v0.4.22
+	webtyp.com/ddl v0.0.58
+	webtyp.com/events v0.1.15
+	webtyp.com/fmt v1.0.3
+	webtyp.com/input v0.2.5
+	webtyp.com/model v0.2.25
+	webtyp.com/orm v0.12.42
+	webtyp.com/router v0.5.0
 	webtyp.com/time v0.6.4
-	webtyp.com/view v0.6.74
+	webtyp.com/view v0.6.88
 )
 
 require (
 	webtyp.com/components v0.8.75
-	webtyp.com/crud v0.0.12
+	webtyp.com/crud v0.0.18
 	webtyp.com/dom v0.13.29
 	webtyp.com/html v0.0.30
-	webtyp.com/layout v0.3.114
-	webtyp.com/storage v0.2.3
+	webtyp.com/layout v0.3.130
+	webtyp.com/storage v0.2.8
 	webtyp.com/svg v0.3.33
 	webtyp.com/unixid v0.3.2
 )
@@ -30,7 +30,7 @@ require (
 	webtyp.com/color v0.1.2 // indirect
 	webtyp.com/country v0.0.2 // indirect
 	webtyp.com/css v0.4.31 // indirect
-	webtyp.com/definitioncheck v0.0.3 // indirect
+	webtyp.com/definitioncheck v0.0.10 // indirect
 	webtyp.com/erd v0.0.16 // indirect
 	webtyp.com/escape v0.1.0 // indirect
 	webtyp.com/fetch v0.1.30 // indirect
@@ -45,5 +45,3 @@ require (
 	webtyp.com/rpc v0.2.21 // indirect
 	webtyp.com/widget v0.6.49 // indirect
 )
-
-replace webtyp.com/events => ../../../webtyp/events
