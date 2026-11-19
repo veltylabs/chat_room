@@ -99,16 +99,6 @@ func (m *chatModule) checkUnread() {
 	m.lastUnread = now
 }
 
-func atoi(s string) int {
-	var n int
-	for i := 0; i < len(s); i++ {
-		if s[i] >= '0' && s[i] <= '9' {
-			n = n*10 + int(s[i]-'0')
-		}
-	}
-	return n
-}
-
 type screen struct {
 	dom.Element
 	m     *chatModule
@@ -118,7 +108,11 @@ type screen struct {
 func (s *screen) Render() *dom.Element {
 	return dom.NewElement("div").
 		Attr("data-chat-screen", "").
-		Attr("style", "height:100%;min-height:0;display:flex;flex-direction:column;overflow:hidden;").
+		StyleProp("height", "100%").
+		StyleProp("min-height", "0").
+		StyleProp("display", "flex").
+		StyleProp("flex-direction", "column").
+		StyleProp("overflow", "hidden").
 		Child(s.m.view)
 }
 
