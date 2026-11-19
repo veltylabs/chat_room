@@ -40,7 +40,7 @@ require (
 	webtyp.com/form v0.4.68 // indirect
 	webtyp.com/icons v0.0.42 // indirect
 	webtyp.com/json v0.5.40 // indirect
-	webtyp.com/lang v0.1.20 // indirect
+	webtyp.com/lang v0.1.22 // indirect
 	webtyp.com/msgtype v0.1.2 // indirect
 	webtyp.com/rpc v0.2.21 // indirect
 	webtyp.com/securityevent v0.0.2 // indirect
